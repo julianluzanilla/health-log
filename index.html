@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Health Log</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f7;
+      color: #111;
+    }
+    header {
+      background: #0a84ff;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    nav button {
+      margin-left: 6px;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 13px;
+    }
+    nav button.active {
+      background: white;
+      color: #0a84ff;
+      font-weight: 600;
+    }
+    main {
+      padding: 12px;
+      max-width: 900px;
+      margin: 0 auto 32px auto;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .field-group {
+      margin-bottom: 8px;
+    }
+    .field-group label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .field-group input,
+    .field-group select,
+    .field-group textarea {
+      width: 100%;
+      font-size: 14px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .field-row {
+      display: flex;
+      gap: 8px;
+    }
+    .field-row .field-group {
+      flex: 1;
+    }
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    .btn {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #0a84ff;
+      color: white;
+    }
+    .btn-secondary {
+      background: #e5e5ea;
+      color: #111;
+    }
+    .btn-danger {
+      background: #ff3b30;
+      color: white;
+    }
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid #eee;
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f2f2f7;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      background: #e5f2ff;
+      color: #0a84ff;
+      margin-right: 4px;
+    }
+    .subtag {
+      background: #f2f2f7;
+      color: #555;
+    }
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .small {
+      font-size: 11px;
+      color: #666;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .chip {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 11px;
+      cursor: pointer;
+      background: #fafafa;
+    }
+    .chip.selected {
+      background: #0a84ff;
+      color: white;
+      border-color: #0a84ff;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Health Log</h1>
+    <nav>
+      <button id="tab-logs" class="active">Registros</button>
+      <button id="tab-new">Nuevo</button>
+      <button id="tab-meds">Medicamentos</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- SECCIÓN REGISTROS -->
+    <section id="view-logs" class="card">
+      <div class="section-title">Registros</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>Filtrar por tipo</label>
+          <select id="filter-type">
+            <option value="">Todos</option>
+            <option value="dolor">Dolores</option>
+            <option value="mareo">Mareo</option>
+            <option value="lpm">LPM</option>
+            <option value="presion">Presión arterial</option>
+            <option value="medicamento">Medicamento</option>
+            <option value="bano">Visita al baño</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-secondary" id="btn-export">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div style="max-height: 400px; overflow: auto; margin-top: 8px;">
+        <table id="logs-table">
+          <thead>
+            <tr>
+              <th>Fecha / Hora</th>
+              <th>Tipo</th>
+              <th>Detalle</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+      <div class="small" id="logs-count"></div>
+    </section>
+
+    <!-- SECCIÓN NUEVO REGISTRO -->
+    <section id="view-new" class="card hidden">
+      <div class="section-title">Nuevo registro</div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label>Fecha</label>
+          <input type="date" id="input-date" />
+        </div>
+        <div class="field-group">
+          <label>Hora</label>
+          <input type="time" id="input-time" />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label>Tipo de registro</label>
+        <select id="input-type">
+          <option value="dolor">Dolor</option>
+          <option value="mareo">Mareo</option>
+          <option value="lpm">Toma de LPM</option>
+          <option value="presion">Toma de presión arterial</option>
+          <option value="medicamento">Toma de medicamento</option>
+          <option value="bano">Visita al baño</option>
+        </select>
+      </div>
+
+      <!-- CAMPOS ESPECÍFICOS -->
+
+      <!-- Dolor -->
+      <div id="fields-dolor">
+        <div class="field-group">
+          <label>Zonas de dolor</label>
+          <div class="chips" id="dolor-zonas">
+            <div class="chip" data-value="cabeza">Cabeza</div>
+            <div class="chip" data-value="espalda">Espalda</div>
+            <div class="chip" data-value="ciatica">Ciática</div>
+            <div class="chip" data-value="cuello">Cuello</div>
+            <div class="chip" data-value="ojos">Ojos</div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Duración (minutos, o 0 si constante)</label>
+            <input type="number" id="dolor-duracion" min="0" step="1" />
+          </div>
+          <div class="field-group">
+            <label>Intensidad (1–10)</label>
+            <input type="number" id="dolor-intensidad" min="1" max="10" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Mareo -->
+      <div id="fields-mareo" class="hidden">
+        <div class="field-row">
+          <div class="field-group">
+            <label>Duración (minutos)</label>
+            <input type="number" id="mareo-duracion" min="0" step="1" />
+          </div>
+          <div class="field-group">
+            <label>Intensidad (1–10)</label>
+            <input type="number" id="mareo-intensidad" min="1" max="10" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- LPM -->
+      <div id="fields-lpm" class="hidden">
+        <div class="field-group">
+          <label>Resultado (LPM)</label>
+          <input type="number" id="lpm-valor" min="0" step="1" />
+        </div>
+        <div class="field-group">
+          <label>Observaciones</label>
+          <textarea id="lpm-observaciones" placeholder="En reposo, después de subir escaleras, al despertar, etc."></textarea>
+        </div>
+      </div>
+
+      <!-- Presión arterial -->
+      <div id="fields-presion" class="hidden">
+        <div class="field-row">
+          <div class="field-group">
+            <label>Sistólica (mmHg)</label>
+            <input type="number" id="presion-sistolica" min="0" step="1" />
+          </div>
+          <div class="field-group">
+            <label>Diastólica (mmHg)</label>
+            <input type="number" id="presion-diastolica" min="0" step="1" />
+          </div>
+          <div class="field-group">
+            <label>LPM (opcional)</label>
+            <input type="number" id="presion-lpm" min="0" step="1" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Observaciones</label>
+          <textarea id="presion-observaciones"></textarea>
+        </div>
+      </div>
+
+      <!-- Medicamento -->
+      <div id="fields-medicamento" class="hidden">
+        <div class="field-group">
+          <label>Medicamento (pre-guardado)</label>
+          <select id="medicamento-select">
+            <!-- opciones dinámicas -->
+          </select>
+          <div class="small">Los medicamentos se configuran en la pestaña “Medicamentos”.</div>
+        </div>
+        <div class="field-group">
+          <label>Dosis</label>
+          <input type="text" id="medicamento-dosis" placeholder="p. ej. 1 tableta, 20 gotas, etc." />
+        </div>
+        <div class="field-group">
+          <label>Síntoma presentado (opcional)</label>
+          <input type="text" id="medicamento-sintoma" />
+        </div>
+      </div>
+
+      <!-- Baño -->
+      <div id="fields-bano" class="hidden">
+        <div class="field-group">
+          <label>Tipo</label>
+          <select id="bano-tipo">
+            <option value="pipi">Pipí</option>
+            <option value="popo">Popó</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Cantidad</label>
+          <select id="bano-cantidad">
+            <option value="muy poco">Muy poco</option>
+            <option value="poco">Poco</option>
+            <option value="regular">Regular</option>
+            <option value="mucho">Mucho</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Observaciones (color, dolor, condiciones, etc.)</label>
+          <textarea id="bano-observaciones"></textarea>
+        </div>
+      </div>
+
+      <!-- Notas generales -->
+      <div class="field-group">
+        <label>Notas generales (opcional)</label>
+        <textarea id="input-notes"></textarea>
+      </div>
+
+      <button class="btn btn-primary" id="btn-save">Guardar registro</button>
+    </section>
+
+    <!-- SECCIÓN MEDICAMENTOS -->
+    <section id="view-meds" class="card hidden">
+      <div class="section-title">Medicamentos</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>Nombre</label>
+          <input type="text" id="med-name" placeholder="p. ej. Paracetamol 500mg" />
+        </div>
+        <div class="field-group">
+          <label>Dosis por defecto (opcional)</label>
+          <input type="text" id="med-dose" placeholder="p. ej. 1 tableta" />
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btn-add-med">Agregar medicamento</button>
+
+      <div style="max-height: 300px; overflow: auto; margin-top: 10px;">
+        <table id="meds-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Dosis por defecto</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // --------- UTILIDADES ----------
+    function nowDate() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10); // YYYY-MM-DD
+    }
+    function nowTime() {
+      const d = new Date();
+      return d.toTimeString().slice(0,5); // HH:MM
+    }
+    function generateId() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      return (
+        d.getFullYear() +
+        pad(d.getMonth() + 1) +
+        pad(d.getDate()) + "-" +
+        pad(d.getHours()) +
+        pad(d.getMinutes()) +
+        pad(d.getSeconds()) + "-" +
+        Math.floor(Math.random() * 10000)
+      );
+    }
+    function loadArray(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error("Error leyendo", key, e);
+        return [];
+      }
+    }
+    function saveArray(key, arr) {
+      localStorage.setItem(key, JSON.stringify(arr));
+    }
+
+    // --------- ESTADO ----------
+    let logs = loadArray("health_logs");
+    let meds = loadArray("medications");
+
+    // --------- TABS ----------
+    const tabLogs = document.getElementById("tab-logs");
+    const tabNew = document.getElementById("tab-new");
+    const tabMeds = document.getElementById("tab-meds");
+
+    const viewLogs = document.getElementById("view-logs");
+    const viewNew = document.getElementById("view-new");
+    const viewMeds = document.getElementById("view-meds");
+
+    function setTab(name) {
+      tabLogs.classList.remove("active");
+      tabNew.classList.remove("active");
+      tabMeds.classList.remove("active");
+      viewLogs.classList.add("hidden");
+      viewNew.classList.add("hidden");
+      viewMeds.classList.add("hidden");
+
+      if (name === "logs") {
+        tabLogs.classList.add("active");
+        viewLogs.classList.remove("hidden");
+        renderLogsTable();
+      } else if (name === "new") {
+        tabNew.classList.add("active");
+        viewNew.classList.remove("hidden");
+      } else if (name === "meds") {
+        tabMeds.classList.add("active");
+        viewMeds.classList.remove("hidden");
+        renderMedsTable();
+      }
+    }
+
+    tabLogs.addEventListener("click", () => setTab("logs"));
+    tabNew.addEventListener("click", () => setTab("new"));
+    tabMeds.addEventListener("click", () => setTab("meds"));
+
+    // --------- INICIALIZAR FECHA/HORA ----------
+    const inputDate = document.getElementById("input-date");
+    const inputTime = document.getElementById("input-time");
+    inputDate.value = nowDate();
+    inputTime.value = nowTime();
+
+    // --------- CAMPOS SEGÚN TIPO ----------
+    const inputType = document.getElementById("input-type");
+    const sectionsByType = {
+      "dolor": document.getElementById("fields-dolor"),
+      "mareo": document.getElementById("fields-mareo"),
+      "lpm": document.getElementById("fields-lpm"),
+      "presion": document.getElementById("fields-presion"),
+      "medicamento": document.getElementById("fields-medicamento"),
+      "bano": document.getElementById("fields-bano")
+    };
+    function updateTypeFields() {
+      const t = inputType.value;
+      Object.entries(sectionsByType).forEach(([key, el]) => {
+        if (key === t) el.classList.remove("hidden");
+        else el.classList.add("hidden");
+      });
+      if (t === "medicamento") {
+        populateMedicamentoSelect();
+      }
+    }
+    inputType.addEventListener("change", updateTypeFields);
+    updateTypeFields();
+
+    // --------- CHIPS DE DOLOR ----------
+    const dolorZonasContainer = document.getElementById("dolor-zonas");
+    let selectedDolorZona = null;
+    dolorZonasContainer.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("chip")) return;
+      const value = e.target.getAttribute("data-value");
+      if (selectedDolorZona === value) {
+        selectedDolorZona = null;
+      } else {
+        selectedDolorZona = value;
+      }
+      Array.from(dolorZonasContainer.children).forEach(chip => {
+        chip.classList.toggle(
+          "selected",
+          chip.getAttribute("data-value") === selectedDolorZona
+        );
+      });
+    });
+
+    // --------- GUARDAR REGISTRO ----------
+    const inputNotes = document.getElementById("input-notes");
+
+    function buildPayload(type) {
+      if (type === "dolor") {
+        return {
+          zona: selectedDolorZona,
+          duracionMin: Number(document.getElementById("dolor-duracion").value || 0),
+          intensidad: Number(document.getElementById("dolor-intensidad").value || 0)
+        };
+      }
+      if (type === "mareo") {
+        return {
+          duracionMin: Number(document.getElementById("mareo-duracion").value || 0),
+          intensidad: Number(document.getElementById("mareo-intensidad").value || 0)
+        };
+      }
+      if (type === "lpm") {
+        return {
+          lpm: Number(document.getElementById("lpm-valor").value || 0),
+          observaciones: document.getElementById("lpm-observaciones").value.trim()
+        };
+      }
+      if (type === "presion") {
+        return {
+          sistolica: Number(document.getElementById("presion-sistolica").value || 0),
+          diastolica: Number(document.getElementById("presion-diastolica").value || 0),
+          lpm: Number(document.getElementById("presion-lpm").value || 0),
+          observaciones: document.getElementById("presion-observaciones").value.trim()
+        };
+      }
+      if (type === "medicamento") {
+        const sel = document.getElementById("medicamento-select");
+        const medId = sel.value || null;
+        const medName = sel.options[sel.selectedIndex]
+          ? sel.options[sel.selectedIndex].text
+          : "";
+        return {
+          medId,
+          medName,
+          dosis: document.getElementById("medicamento-dosis").value.trim(),
+          sintoma: document.getElementById("medicamento-sintoma").value.trim()
+        };
+      }
+      if (type === "bano") {
+        return {
+          tipo: document.getElementById("bano-tipo").value,
+          cantidad: document.getElementById("bano-cantidad").value,
+          observaciones: document.getElementById("bano-observaciones").value.trim()
+        };
+      }
+      return {};
+    }
+
+    document.getElementById("btn-save").addEventListener("click", () => {
+      const date = inputDate.value;
+      const time = inputTime.value;
+      const type = inputType.value;
+      if (!date || !time || !type) {
+        alert("Fecha, hora y tipo son obligatorios.");
+        return;
+      }
+
+      const payload = buildPayload(type);
+      const notes = inputNotes.value.trim();
+
+      const newLog = {
+        id: generateId(),
+        date,
+        time,
+        type,
+        subtype: payload.zona || payload.tipo || null,
+        payload,
+        notes
+      };
+
+      logs.push(newLog);
+      saveArray("health_logs", logs);
+
+      // Reset rápido de algunos campos
+      inputTime.value = nowTime();
+      inputNotes.value = "";
+      if (type === "dolor") {
+        document.getElementById("dolor-duracion").value = "";
+        document.getElementById("dolor-intensidad").value = "";
+        selectedDolorZona = null;
+        Array.from(dolorZonasContainer.children).forEach(chip => chip.classList.remove("selected"));
+      } else if (type === "mareo") {
+        document.getElementById("mareo-duracion").value = "";
+        document.getElementById("mareo-intensidad").value = "";
+      } else if (type === "lpm") {
+        document.getElementById("lpm-valor").value = "";
+        document.getElementById("lpm-observaciones").value = "";
+      } else if (type === "presion") {
+        document.getElementById("presion-sistolica").value = "";
+        document.getElementById("presion-diastolica").value = "";
+        document.getElementById("presion-lpm").value = "";
+        document.getElementById("presion-observaciones").value = "";
+      } else if (type === "medicamento") {
+        document.getElementById("medicamento-dosis").value = "";
+        document.getElementById("medicamento-sintoma").value = "";
+      } else if (type === "bano") {
+        document.getElementById("bano-observaciones").value = "";
+      }
+
+      alert("Registro guardado.");
+      setTab("logs");
+    });
+
+    // --------- RENDER DE REGISTROS ----------
+    const logsTableBody = document.querySelector("#logs-table tbody");
+    const logsCount = document.getElementById("logs-count");
+    const filterType = document.getElementById("filter-type");
+
+    function summarizeLog(log) {
+      const t = log.type;
+      const p = log.payload || {};
+      if (t === "dolor") {
+        return `Zona: ${p.zona || "-"}, duración: ${p.duracionMin || 0} min, intensidad: ${p.intensidad || 0}/10`;
+      }
+      if (t === "mareo") {
+        return `Duración: ${p.duracionMin || 0} min, intensidad: ${p.intensidad || 0}/10`;
+      }
+      if (t === "lpm") {
+        return `LPM: ${p.lpm || "-"} (${p.observaciones || "sin observaciones"})`;
+      }
+      if (t === "presion") {
+        const pres = p.sistolica && p.diastolica ? `${p.sistolica}/${p.diastolica} mmHg` : "-";
+        const lpmTxt = p.lpm ? `, ${p.lpm} LPM` : "";
+        return `Presión: ${pres}${lpmTxt} (${p.observaciones || "sin observaciones"})`;
+      }
+      if (t === "medicamento") {
+        const dosisTxt = p.dosis ? `, dosis: ${p.dosis}` : "";
+        const sintomaTxt = p.sintoma ? `, síntoma: ${p.sintoma}` : "";
+        return `Medicamento: ${p.medName || "-"}${dosisTxt}${sintomaTxt}`;
+      }
+      if (t === "bano") {
+        return `Tipo: ${p.tipo || "-"}, cantidad: ${p.cantidad || "-"} (${p.observaciones || "sin observaciones"})`;
+      }
+      return JSON.stringify(p);
+    }
+
+    function renderLogsTable() {
+      const selectedType = filterType.value;
+      logsTableBody.innerHTML = "";
+
+      const sorted = [...logs].sort((a, b) => {
+        const aKey = a.date + " " + a.time;
+        const bKey = b.date + " " + b.time;
+        return aKey < bKey ? 1 : -1; // más reciente primero
+      });
+
+      let count = 0;
+      for (const log of sorted) {
+        if (selectedType && log.type !== selectedType) continue;
+        count++;
+
+        const tr = document.createElement("tr");
+
+        const tdDate = document.createElement("td");
+        tdDate.textContent = `${log.date} ${log.time}`;
+        tr.appendChild(tdDate);
+
+        const tdType = document.createElement("td");
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        const typeLabels = {
+          "dolor": "Dolor",
+          "mareo": "Mareo",
+          "lpm": "LPM",
+          "presion": "Presión",
+          "medicamento": "Medicamento",
+          "bano": "Baño"
+        };
+        tag.textContent = typeLabels[log.type] || log.type;
+        tdType.appendChild(tag);
+        if (log.subtype) {
+          const sub = document.createElement("span");
+          sub.className = "tag subtag";
+          sub.textContent = log.subtype;
+          tdType.appendChild(sub);
+        }
+        tr.appendChild(tdType);
+
+        const tdDetail = document.createElement("td");
+        const main = document.createElement("div");
+        main.textContent = summarizeLog(log);
+        tdDetail.appendChild(main);
+        if (log.notes) {
+          const notesEl = document.createElement("div");
+          notesEl.className = "small";
+          notesEl.textContent = "Notas: " + log.notes;
+          tdDetail.appendChild(notesEl);
+        }
+        tr.appendChild(tdDetail);
+
+        const tdActions = document.createElement("td");
+        const btnDel = document.createElement("button");
+        btnDel.textContent = "Eliminar";
+        btnDel.className = "btn btn-danger btn-sm";
+        btnDel.addEventListener("click", () => {
+          if (!confirm("¿Eliminar este registro?")) return;
+          logs = logs.filter(l => l.id !== log.id);
+          saveArray("health_logs", logs);
+          renderLogsTable();
+        });
+        tdActions.appendChild(btnDel);
+        tr.appendChild(tdActions);
+
+        logsTableBody.appendChild(tr);
+      }
+
+      logsCount.textContent = `${count} registro(s) mostrados`;
+    }
+
+    filterType.addEventListener("change", renderLogsTable);
+
+    // --------- EXPORTAR CSV ----------
+    document.getElementById("btn-export").addEventListener("click", () => {
+      const selectedType = filterType.value;
+      const rows = [["id","fecha","hora","tipo","subtipo","detalle","notas"]];
+
+      const typeLabels = {
+        "dolor": "Dolor",
+        "mareo": "Mareo",
+        "lpm": "LPM",
+        "presion": "Presión",
+        "medicamento": "Medicamento",
+        "bano": "Baño"
+      };
+
+      for (const log of logs) {
+        if (selectedType && log.type !== selectedType) continue;
+        const detalle = summarizeLog(log).replace(/\n/g, " ");
+        rows.push([
+          log.id,
+          log.date,
+          log.time,
+          typeLabels[log.type] || log.type,
+          log.subtype || "",
+          detalle,
+          (log.notes || "").replace(/\n/g, " ")
+        ]);
+      }
+
+      const csv = rows.map(r =>
+        r.map(field => {
+          const s = String(field ?? "");
+          if (s.includes(",") || s.includes("\"") || s.includes("\n")) {
+            return `"${s.replace(/"/g, '""')}"`;
+          }
+          return s;
+        }).join(",")
+      ).join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "health_logs.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // --------- MEDICAMENTOS ----------
+    const medsTableBody = document.querySelector("#meds-table tbody");
+
+    function renderMedsTable() {
+      medsTableBody.innerHTML = "";
+      for (const med of meds) {
+        const tr = document.createElement("tr");
+        const tdName = document.createElement("td");
+        tdName.textContent = med.name;
+        tr.appendChild(tdName);
+
+        const tdDose = document.createElement("td");
+        tdDose.textContent = med.defaultDose || "";
+        tr.appendChild(tdDose);
+
+        const tdActions = document.createElement("td");
+        const btnDel = document.createElement("button");
+        btnDel.textContent = "Eliminar";
+        btnDel.className = "btn btn-danger btn-sm";
+        btnDel.addEventListener("click", () => {
+          if (!confirm("¿Eliminar este medicamento?")) return;
+          meds = meds.filter(m => m.id !== med.id);
+          saveArray("medications", meds);
+          renderMedsTable();
+        });
+        tdActions.appendChild(btnDel);
+        tr.appendChild(tdActions);
+
+        medsTableBody.appendChild(tr);
+      }
+      populateMedicamentoSelect();
+    }
+
+    document.getElementById("btn-add-med").addEventListener("click", () => {
+      const name = document.getElementById("med-name").value.trim();
+      const dose = document.getElementById("med-dose").value.trim();
+      if (!name) {
+        alert("El nombre del medicamento es obligatorio.");
+        return;
+      }
+      meds.push({
+        id: generateId(),
+        name,
+        defaultDose: dose
+      });
+      saveArray("medications", meds);
+      document.getElementById("med-name").value = "";
+      document.getElementById("med-dose").value = "";
+      renderMedsTable();
+    });
+
+    function populateMedicamentoSelect() {
+      const sel = document.getElementById("medicamento-select");
+      sel.innerHTML = "";
+      if (!meds.length) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "Sin medicamentos configurados";
+        sel.appendChild(opt);
+        return;
+      }
+      for (const med of meds) {
+        const opt = document.createElement("option");
+        opt.value = med.id;
+        opt.textContent = med.name;
+        sel.appendChild(opt);
+      }
+      // si hay dosis por defecto, sugerirla
+      const first = meds[0];
+      if (first && first.defaultDose) {
+        document.getElementById("medicamento-dosis").placeholder = first.defaultDose;
+      }
+    }
+
+    // --------- INICIO ---------
+    renderLogsTable();
+    renderMedsTable();
+  </script>
+</body>
+</html>
