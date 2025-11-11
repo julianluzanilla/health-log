@@ -5,96 +5,44 @@
   <title>Health Log – Auth (Cognito)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* ===== LAYOUT GENERAL RESPONSIVE ===== */
+    /* ===== Layout general, sin marco de smartphone ===== */
     body{
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       margin:0;
-      background:#e5e7eb;
+      background:#0b1220;
       color:#111827;
-      min-height:100vh;
       display:flex;
       justify-content:center;
       align-items:flex-start;
+      min-height:100vh;
+      padding:16px;
     }
-    .app-shell{
+    .shell{
       width:100%;
-      max-width:420px;           /* ancho cómodo para móvil y desktop */
-      margin:16px;
+      max-width:960px;
       background:#f9fafb;
       border-radius:24px;
-      box-shadow:0 18px 45px rgba(15,23,42,.25);
+      box-shadow:0 18px 45px rgba(15,23,42,.45);
+      padding:16px 16px 20px;
+    }
+    .screen{
+      border-radius:18px;
       overflow:hidden;
-      display:flex;
-      flex-direction:column;
     }
-    header.app-header{
-      padding:12px 20px 6px;
-      font-size:11px;
-      text-align:center;
-      color:#6b7280;
-    }
-
-    main{
-      padding:0 20px 20px;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-    }
-
-    @media (min-width: 768px){
-      body{
-        align-items:center;    /* centrar en pantallas grandes */
-      }
-      .app-shell{
-        max-width:460px;
-      }
-    }
-
-    /* ===== COMPONENTES ===== */
     .status-top{
-      font-size:11px;
-      min-height:16px;
-    }
-    .card{padding:0;margin:0}
-
-    /* cabecera visual del login */
-    .login-header{
-      background:#111827;
-      color:#f9fafb;
-      padding:24px 20px 28px;
-      border-bottom-left-radius:40px;
-      border-bottom-right-radius:40px;
-      margin:0 -20px 12px;
-    }
-    .login-header-title{
-      font-size:24px;
-      line-height:1.2;
-      font-weight:600;
-    }
-    .login-header-sub{font-size:12px;opacity:.8}
-
-    .section-body{
-      padding-top:8px;
-      display:flex;
-      flex-direction:column;
-    }
-
-    h2.screen-title{
-      font-size:18px;
-      font-weight:600;
-      margin:8px 0 16px;
       text-align:center;
+      font-size:12px;
+      padding-bottom:6px;
+      min-height:18px;
     }
 
-    label{
-      font-size:12px;
-      color:#6b7280;
-      margin-bottom:4px;
-      display:block;
-    }
-    input,select{
+    h1{font-size:20px;margin:0 0 10px;text-align:left}
+    h2.screen-title{font-size:18px;margin:8px 0 16px;text-align:center}
+    .card{padding:16px}
+    label{font-size:12px;color:#6b7280;margin-bottom:4px;display:block}
+    input,select,textarea{
       width:100%;
-      padding:10px 12px;
+      padding:9px 11px;
       border-radius:10px;
       border:1px solid #d1d5db;
       background:#fff;
@@ -102,59 +50,54 @@
       font-size:14px;
       box-sizing:border-box;
     }
-    input:focus,select:focus{
-      outline:none;
-      border-color:#2563eb;
-      box-shadow:0 0 0 1px #2563eb33;
+    input:focus,select:focus,textarea:focus{
+      outline:none;border-color:#2563eb;box-shadow:0 0 0 1px #2563eb33;
     }
+    textarea{min-height:70px;resize:vertical;}
     .row{margin-bottom:12px}
-
     .btn{
-      border:0;
-      border-radius:999px;
-      padding:10px 14px;
-      cursor:pointer;
-      font-size:14px;
-      font-weight:500;
+      border:0;border-radius:999px;padding:10px 14px;cursor:pointer;
+      font-size:14px;font-weight:500;
     }
     .primary{background:#111827;color:white}
     .secondary{background:#e5e7eb;color:#111827}
     .danger{background:#ef4444;color:white}
-
     .muted{color:#6b7280;font-size:12px}
     .ok{color:#16a34a}
     .err{color:#dc2626}
-    code{
-      background:#e5e7eb;
-      padding:2px 6px;
-      border-radius:6px;
-      font-size:11px;
-    }
+    code{background:#e5e7eb;padding:2px 6px;border-radius:6px;font-size:11px}
     .hidden{display:none}
-
-    .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px}
+    .avatar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
     .avatar{
       border:1px solid #d1d5db;border-radius:10px;padding:6px;text-align:center;
       cursor:pointer;font-size:11px;background:#fff;
     }
     .avatar.selected{outline:2px solid #2563eb;border-color:#2563eb}
+    .sep{height:1px;background:#e5e7eb;margin:10px 0}
 
-    .sep{height:1px;background:#e5e7eb;margin:12px 0}
-
-    .login-footer-links{
-      display:flex;justify-content:space-between;
-      margin:4px 0 16px;
-      font-size:12px;
-      color:#6b7280;
-    }
     .link-btn{
       background:none;border:none;padding:0;margin:0;
-      color:#111827;font-size:12px;
-      cursor:pointer;
+      color:#111827;font-size:12px;cursor:pointer;
       text-decoration:underline;
     }
 
-    #sess-attrs,#sess-logs{
+    .login-header{
+      background:#111827;color:#f9fafb;
+      padding:20px 18px 26px;
+      border-radius:18px 18px 40px 40px;
+      margin:-16px -16px 0 -16px;
+    }
+    .login-header-title{font-size:22px;line-height:1.2;font-weight:600}
+    .login-header-sub{font-size:12px;opacity:.8}
+
+    .login-body{padding:20px 4px 4px}
+
+    .login-footer-links{
+      display:flex;justify-content:space-between;
+      margin:4px 0 16px;font-size:12px;color:#6b7280;
+    }
+
+    #sess-attrs,#logs-list{
       white-space:pre-wrap;
       background:#111827;
       color:#e5e7eb;
@@ -163,22 +106,74 @@
       border:1px solid #1f2937;
       font-size:11px;
     }
+
+    .logs-header{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .logs-header select{
+      width:auto;min-width:140px;
+    }
+    .log-item{
+      background:#0f1728;
+      color:#e5e7eb;
+      border-radius:10px;
+      padding:8px 10px;
+      margin-bottom:6px;
+      border:1px solid #1f2937;
+      font-size:12px;
+    }
+    .log-item-head{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:2px;
+      font-weight:500;
+    }
+    .tag{
+      font-size:11px;
+      padding:1px 7px;
+      border-radius:999px;
+      background:#111827;
+      border:1px solid #374151;
+    }
+
+    .session-layout{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    @media (min-width: 800px){
+      .session-layout{
+        display:grid;
+        grid-template-columns:minmax(0,1.05fr) minmax(0,1.2fr);
+        gap:18px;
+        align-items:flex-start;
+      }
+    }
+
+    .section-title{
+      font-size:14px;
+      font-weight:600;
+      margin-bottom:8px;
+    }
   </style>
 </head>
 <body>
-  <div class="app-shell"><!-- LAYOUT -->
-    <header class="app-header">
-      <span id="status" class="muted status-top"></span>
-    </header>
+  <div class="shell">
+    <div class="screen">
+      <div class="status-top"><span id="status" class="muted"></span></div>
 
-    <main>
-      <!-- LOGIN (pantalla inicial) -->
-      <section id="view-login" class="card">
+      <!-- ===== LOGIN ===== -->
+      <div id="view-login" class="card">
         <div class="login-header">
-          <div class="login-header-title">Health<br>Log</div>
-          <div class="login-header-sub">Registra tu salud día a día</div>
+          <div class="login-header-title">Health Log</div>
+          <div class="login-header-sub">Registra tus síntomas y mediciones</div>
         </div>
-        <div class="section-body">
+        <div class="login-body">
           <h2 class="screen-title">Inicia sesión</h2>
           <div class="row">
             <label>Correo</label>
@@ -194,11 +189,11 @@
           </div>
           <button class="btn primary" id="btn-login">Entrar</button>
         </div>
-      </section>
+      </div>
 
-      <!-- SIGN UP -->
-      <section id="view-signup" class="card hidden">
-        <div class="section-body">
+      <!-- ===== SIGN UP ===== -->
+      <div class="card hidden" id="view-signup">
+        <div class="login-body">
           <button class="link-btn" id="back-to-login" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
           <h2 class="screen-title">Crear cuenta</h2>
           <div class="row"><label>Correo</label><input type="email" id="su-email" placeholder="tucorreo@ejemplo.com"></div>
@@ -223,19 +218,17 @@
               <option value="atleta">Atleta</option>
             </select>
           </div>
-
           <div class="row">
             <label>Avatar (elige 1 de 10)</label>
             <div class="avatar-grid" id="avatar-grid"></div>
           </div>
-
           <button class="btn primary" id="btn-signup">Registrarme</button>
         </div>
-      </section>
+      </div>
 
-      <!-- CONFIRM CODE -->
-      <section id="view-confirm" class="card hidden">
-        <div class="section-body">
+      <!-- ===== CONFIRM CODE ===== -->
+      <div class="card hidden" id="view-confirm">
+        <div class="login-body">
           <button class="link-btn" id="back-to-login-from-confirm" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
           <h2 class="screen-title">Confirmar correo</h2>
           <div class="row"><label>Correo</label><input type="email" id="cf-email" placeholder="tu email"></div>
@@ -243,30 +236,78 @@
           <button class="btn primary" id="btn-confirm" style="margin-top:8px;">Confirmar</button>
           <button class="btn secondary" id="btn-resend" style="margin-top:6px;">Reenviar código</button>
         </div>
-      </section>
+      </div>
 
-      <!-- SESIÓN INICIADA -->
-      <section id="view-session" class="card hidden">
-        <div class="section-body">
+      <!-- ===== SESIÓN INICIADA / APP ===== -->
+      <div class="card hidden" id="view-session">
+        <div class="login-body">
           <h2 class="screen-title">Sesión iniciada</h2>
           <div class="muted" style="margin-bottom:4px;">Usuario: <span id="sess-email"></span></div>
           <div class="muted" style="margin-bottom:8px;">ID Token (recortado): <code id="sess-idtoken"></code></div>
           <div class="sep"></div>
-          <div class="muted">Atributos:</div>
+          <div class="muted" style="margin-bottom:4px;">Atributos del usuario:</div>
           <pre id="sess-attrs"></pre>
           <button class="btn danger" id="btn-logout" style="margin-top:10px;">Cerrar sesión</button>
 
           <div class="sep"></div>
-          <div class="muted" style="margin-bottom:6px;">Pruebas con la API en AWS:</div>
-          <button class="btn secondary" id="btn-test-save" style="margin-bottom:6px;">Guardar log de prueba</button>
-          <button class="btn secondary" id="btn-test-load">Cargar logs</button>
 
-          <div class="sep"></div>
-          <div class="muted">Logs recibidos:</div>
-          <pre id="sess-logs"></pre>
+          <div class="session-layout">
+            <!-- Columna izquierda: formulario nuevo registro -->
+            <div>
+              <div class="section-title">Nuevo registro</div>
+              <div class="row">
+                <label>Fecha</label>
+                <input type="date" id="log-date">
+              </div>
+              <div class="row">
+                <label>Hora</label>
+                <input type="time" id="log-time">
+              </div>
+              <div class="row">
+                <label>Tipo de registro</label>
+                <select id="log-type">
+                  <option value="dolor">Dolor</option>
+                  <option value="mareo">Mareo</option>
+                  <option value="lpm">Toma de LPM</option>
+                  <option value="presion">Presión arterial</option>
+                  <option value="medicamento">Toma de medicamento</option>
+                  <option value="bano">Visita al baño</option>
+                </select>
+              </div>
+
+              <div id="log-extra"></div>
+
+              <div class="row">
+                <label>Observaciones / notas</label>
+                <textarea id="log-notes" placeholder="Opcional"></textarea>
+              </div>
+
+              <button class="btn primary" id="btn-save-log">Guardar registro</button>
+            </div>
+
+            <!-- Columna derecha: historial -->
+            <div>
+              <div class="section-title">Historial</div>
+              <div class="logs-header">
+                <label style="margin:0;font-size:12px;">Filtrar por tipo:</label>
+                <select id="filter-type">
+                  <option value="todos">Todos</option>
+                  <option value="dolor">Dolor</option>
+                  <option value="mareo">Mareo</option>
+                  <option value="lpm">LPM</option>
+                  <option value="presion">Presión</option>
+                  <option value="medicamento">Medicamento</option>
+                  <option value="bano">Baño</option>
+                </select>
+                <button class="btn secondary" id="btn-refresh-logs" style="margin-left:auto;">Refrescar</button>
+              </div>
+              <div id="logs-list"></div>
+            </div>
+          </div>
         </div>
-      </section>
-    </main>
+      </div>
+
+    </div>
   </div>
 
   <!-- SDK Cognito (UMD) -->
@@ -283,12 +324,11 @@
     const API_URL = "https://qrmjqw5uon6c4ydfocz2v2m3cm0rkggr.lambda-url.us-east-2.on.aws/";
     // ============================================
 
-    // UI helpers
     const $ = (s)=>document.querySelector(s);
     const show = (id)=>$(id).classList.remove('hidden');
     const hide = (id)=>$(id).classList.add('hidden');
     const setStatus = (msg, cls='muted')=>{
-      const el = $('#status'); el.className = cls + ' status-top'; el.textContent = msg||'';
+      const el = $('#status'); el.className=cls; el.textContent = msg||'';
     };
 
     // Avatares
@@ -315,7 +355,7 @@
     const gotoSignup = ()=>{ hide('#view-login'); show('#view-signup'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
     const gotoLogin  = ()=>{ show('#view-login'); hide('#view-signup'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
     const gotoConfirm= ()=>{ hide('#view-login'); hide('#view-signup'); show('#view-confirm'); hide('#view-session'); setStatus('Se envió un código de verificación a tu correo.', 'muted'); };
-    const gotoSession= ()=>{ hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); show('#view-session'); };
+    const gotoSession= ()=>{ hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); show('#view-session'); setDefaultsForNewLog(); };
 
     $('#go-signup-from-login').addEventListener('click', gotoSignup);
     $('#back-to-login').addEventListener('click', gotoLogin);
@@ -350,7 +390,7 @@
       });
     });
 
-    // ===== CONFIRMATION =====
+    // ===== CONFIRM =====
     function getUserByEmail(email){
       return new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
     }
@@ -403,13 +443,10 @@
             const obj = {};
             attrs.forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
-
-            if (obj.sub) {
-              localStorage.setItem('hl_user_sub', obj.sub);
-            }
-
+            if (obj.sub) localStorage.setItem('hl_user_sub', obj.sub);
             gotoSession();
             setStatus('Sesión iniciada.', 'ok');
+            loadHealthLogs(); // cargar historial al entrar
           });
         },
         onFailure: (err)=>{
@@ -430,7 +467,7 @@
       gotoLogin();
     });
 
-    // ===== AUTO-UI =====
+    // ===== AUTO LOGIN UI =====
     window.addEventListener('load', ()=>{
       const cu = userPool.getCurrentUser();
       if(cu){
@@ -444,6 +481,7 @@
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
             if (obj.sub) localStorage.setItem('hl_user_sub', obj.sub);
             gotoSession();
+            loadHealthLogs();
           });
         });
       } else {
@@ -451,76 +489,298 @@
       }
     });
 
-    // ===== API AWS =====
+    // ===== APP: formulario de salud + historial =====
     function getCurrentUserId() {
       return localStorage.getItem('hl_user_sub');
     }
+    function todayDateStr(){
+      const d = new Date();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+    function timeStr(){
+      const d = new Date();
+      const h = String(d.getHours()).padStart(2,'0');
+      const m = String(d.getMinutes()).padStart(2,'0');
+      return `${h}:${m}`;
+    }
 
-    async function apiSaveTestLog() {
+    function setDefaultsForNewLog(){
+      const dateInput = $('#log-date');
+      const timeInput = $('#log-time');
+      if(dateInput && !dateInput.value) dateInput.value = todayDateStr();
+      if(timeInput && !timeInput.value) timeInput.value = timeStr();
+      renderExtraFields();
+    }
+
+    function renderExtraFields(){
+      const type = $('#log-type').value;
+      const c = $('#log-extra');
+      if(!c) return;
+      let html = '';
+      if(type === 'dolor'){
+        html = `
+          <div class="row">
+            <label>Zona del dolor</label>
+            <select id="log-dolor-zona">
+              <option value="cabeza">Cabeza</option>
+              <option value="espalda">Espalda</option>
+              <option value="ciatica">Ciática</option>
+              <option value="cuello">Cuello</option>
+              <option value="ojos">Ojos</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>Duración (minutos, 0 si constante)</label>
+            <input type="number" id="log-dolor-duracion" min="0" step="1" value="0">
+          </div>
+          <div class="row">
+            <label>Intensidad (1 a 10)</label>
+            <input type="number" id="log-dolor-intensidad" min="1" max="10" step="1" value="5">
+          </div>
+        `;
+      } else if(type === 'mareo'){
+        html = `
+          <div class="row">
+            <label>Duración (minutos)</label>
+            <input type="number" id="log-mareo-duracion" min="0" step="1" value="0">
+          </div>
+          <div class="row">
+            <label>Intensidad (1 a 10)</label>
+            <input type="number" id="log-mareo-intensidad" min="1" max="10" step="1" value="5">
+          </div>
+        `;
+      } else if(type === 'lpm'){
+        html = `
+          <div class="row">
+            <label>Resultado (latidos por minuto)</label>
+            <input type="number" id="log-lpm-valor" min="20" max="250" step="1">
+          </div>
+        `;
+      } else if(type === 'presion'){
+        html = `
+          <div class="row">
+            <label>Presión sistólica</label>
+            <input type="number" id="log-pres-sistolica" min="50" max="250" step="1">
+          </div>
+          <div class="row">
+            <label>Presión diastólica</label>
+            <input type="number" id="log-pres-diastolica" min="30" max="200" step="1">
+          </div>
+          <div class="row">
+            <label>LPM (opcional)</label>
+            <input type="number" id="log-pres-lpm" min="20" max="250" step="1">
+          </div>
+        `;
+      } else if(type === 'medicamento'){
+        html = `
+          <div class="row">
+            <label>Nombre del medicamento</label>
+            <input type="text" id="log-med-nombre" placeholder="Ej. Ibuprofeno 400mg">
+          </div>
+          <div class="row">
+            <label>Dosis</label>
+            <input type="text" id="log-med-dosis" placeholder="Ej. 1 tableta">
+          </div>
+          <div class="row">
+            <label>Síntoma presentado (opcional)</label>
+            <input type="text" id="log-med-sintoma" placeholder="Dolor de cabeza, fiebre, etc.">
+          </div>
+        `;
+      } else if(type === 'bano'){
+        html = `
+          <div class="row">
+            <label>Tipo</label>
+            <select id="log-bano-tipo">
+              <option value="pipi">Pipí</option>
+              <option value="popo">Popó</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>Cantidad</label>
+            <select id="log-bano-cantidad">
+              <option value="muy_poco">Muy poco</option>
+              <option value="poco">Poco</option>
+              <option value="normal">Regular</option>
+              <option value="mucho">Mucho</option>
+            </select>
+          </div>
+        `;
+      }
+      c.innerHTML = html;
+    }
+    $('#log-type').addEventListener('change', renderExtraFields);
+
+    async function saveHealthLog(){
       const userId = getCurrentUserId();
-      if (!userId) {
-        setStatus("No hay userId (sub). Cierra sesión y vuelve a entrar.", "err");
+      if(!userId){
+        setStatus("No hay usuario. Vuelve a iniciar sesión.", "err");
         return;
       }
-      const now = new Date();
-      const date = now.toISOString().slice(0,10);
-      const time = now.toTimeString().slice(0,5);
+      const date = $('#log-date').value || todayDateStr();
+      const time = $('#log-time').value || timeStr();
+      const type = $('#log-type').value;
+      const notes = $('#log-notes').value.trim();
 
-      const payload = {
-        userId,
-        date,
-        time,
-        type: "dolor",
-        subtype: "cabeza",
-        payload: { intensidad: 5 },
-        notes: "Log de prueba desde el navegador"
-      };
+      let subtype = "";
+      let payload = {};
 
-      try {
+      try{
+        if(type === 'dolor'){
+          const zona = $('#log-dolor-zona').value;
+          const dur  = parseInt($('#log-dolor-duracion').value || "0",10);
+          const inten= parseInt($('#log-dolor-intensidad').value || "0",10);
+          subtype = zona;
+          payload = { zona, duracionMin: dur, intensidad: inten };
+        } else if(type === 'mareo'){
+          const dur  = parseInt($('#log-mareo-duracion').value || "0",10);
+          const inten= parseInt($('#log-mareo-intensidad').value || "0",10);
+          payload = { duracionMin: dur, intensidad: inten };
+        } else if(type === 'lpm'){
+          const val = parseInt($('#log-lpm-valor').value || "0",10);
+          payload = { lpm: val };
+        } else if(type === 'presion'){
+          const sis = parseInt($('#log-pres-sistolica').value || "0",10);
+          const dia = parseInt($('#log-pres-diastolica').value || "0",10);
+          const lpm = $('#log-pres-lpm').value ? parseInt($('#log-pres-lpm').value,10) : null;
+          payload = { sistolica: sis, diastolica: dia };
+          if(lpm !== null && !Number.isNaN(lpm)) payload.lpm = lpm;
+        } else if(type === 'medicamento'){
+          const nom = $('#log-med-nombre').value.trim();
+          const dos = $('#log-med-dosis').value.trim();
+          const sin = $('#log-med-sintoma').value.trim();
+          payload = { nombre: nom, dosis: dos, sintoma: sin };
+        } else if(type === 'bano'){
+          const t = $('#log-bano-tipo').value;
+          const c = $('#log-bano-cantidad').value;
+          subtype = t;
+          payload = { tipo: t, cantidad: c };
+        }
+      } catch(e){
+        console.error("Error leyendo campos:", e);
+        setStatus("Revisa los campos del formulario.", "err");
+        return;
+      }
+
+      try{
         const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ userId, date, time, type, subtype, payload, notes })
         });
         const data = await res.json();
-        if (!res.ok || !data.ok) {
+        if(!res.ok || !data.ok){
           console.error("Error API POST", data);
           setStatus("Error al guardar en la API", "err");
           return;
         }
-        setStatus("Log de prueba guardado en DynamoDB", "ok");
-      } catch (e) {
+        setStatus("Registro guardado en DynamoDB.", "ok");
+        // refrescar historial
+        loadHealthLogs();
+      } catch(e){
         console.error(e);
         setStatus("Error de red llamando a la API", "err");
       }
     }
+    $('#btn-save-log').addEventListener('click', saveHealthLog);
 
-    async function apiLoadLogs() {
-      const userId = getCurrentUserId();
-      if (!userId) {
-        setStatus("No hay userId (sub). Cierra sesión y vuelve a entrar.", "err");
+    let lastLogs = [];
+
+    function describeLog(log){
+      const p = log.payload || {};
+      const notes = log.notes ? ` · Obs: ${log.notes}` : '';
+      if(log.type === 'dolor'){
+        const zona = p.zona || log.subtype || '';
+        const inten = p.intensidad != null ? `intensidad ${p.intensidad}` : '';
+        const dur = p.duracionMin != null ? `${p.duracionMin} min` : '';
+        return `Dolor de ${zona} ${inten} ${dur}`.trim()+notes;
+      }
+      if(log.type === 'mareo'){
+        return `Mareo ${p.intensidad!=null?`intensidad ${p.intensidad}`:''} ${p.duracionMin!=null?`${p.duracionMin} min`:''}`.trim()+notes;
+      }
+      if(log.type === 'lpm'){
+        return `LPM: ${p.lpm||'–'}`+notes;
+      }
+      if(log.type === 'presion'){
+        const base = `Presión ${p.sistolica||'?'} / ${p.diastolica||'?'}${p.lpm!=null?` · ${p.lpm} lpm`:''}`;
+        return base+notes;
+      }
+      if(log.type === 'medicamento'){
+        const nom = p.nombre || 'Medicamento';
+        const dos = p.dosis ? ` · ${p.dosis}` : '';
+        const sin = p.sintoma ? ` · síntoma: ${p.sintoma}` : '';
+        return `${nom}${dos}${sin}${notes}`;
+      }
+      if(log.type === 'bano'){
+        const t = p.tipo || log.subtype || '';
+        const c = p.cantidad || '';
+        return `Baño: ${t} · ${c}${notes}`;
+      }
+      return notes || '';
+    }
+
+    function renderLogsList(){
+      const cont = $('#logs-list');
+      if(!cont) return;
+      const filter = $('#filter-type').value || 'todos';
+      cont.textContent = '';
+      const logs = lastLogs || [];
+      if(logs.length === 0){
+        cont.textContent = 'No hay registros aún.';
         return;
       }
-      try {
+      const frag = document.createDocumentFragment();
+      logs
+        .filter(l=> filter==='todos' || l.type===filter)
+        .forEach(log=>{
+          const div = document.createElement('div');
+          div.className = 'log-item';
+          const head = document.createElement('div');
+          head.className = 'log-item-head';
+          const left = document.createElement('div');
+          left.textContent = `${log.date} ${log.time}`;
+          const right = document.createElement('div');
+          const tag = document.createElement('span');
+          tag.className='tag';
+          tag.textContent = log.type + (log.subtype?` · ${log.subtype}`:'');
+          right.appendChild(tag);
+          head.appendChild(left);
+          head.appendChild(right);
+
+          const body = document.createElement('div');
+          body.textContent = describeLog(log);
+
+          div.appendChild(head);
+          div.appendChild(body);
+          frag.appendChild(div);
+        });
+
+      cont.appendChild(frag);
+    }
+
+    async function loadHealthLogs(){
+      const userId = getCurrentUserId();
+      if(!userId) return;
+      try{
         const url = API_URL + "?userId=" + encodeURIComponent(userId);
         const res = await fetch(url);
         const data = await res.json();
-        if (!res.ok || !data.ok) {
+        if(!res.ok || !data.ok){
           console.error("Error API GET", data);
           setStatus("Error al leer de la API", "err");
           return;
         }
-        const logs = data.logs || [];
-        $('#sess-logs').textContent = JSON.stringify(logs, null, 2);
-        setStatus(`Se cargaron ${logs.length} log(s) desde DynamoDB.`, "ok");
-      } catch (e) {
+        lastLogs = data.logs || [];
+        renderLogsList();
+        setStatus(`Se cargaron ${lastLogs.length} log(s) desde DynamoDB.`, "ok");
+      } catch(e){
         console.error(e);
         setStatus("Error de red llamando a la API", "err");
       }
     }
-
-    $('#btn-test-save').addEventListener('click', apiSaveTestLog);
-    $('#btn-test-load').addEventListener('click', apiLoadLogs);
+    $('#filter-type').addEventListener('change', renderLogsList);
+    $('#btn-refresh-logs').addEventListener('click', loadHealthLogs);
   </script>
 </body>
 </html>
