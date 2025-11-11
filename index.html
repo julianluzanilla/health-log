@@ -5,116 +5,240 @@
   <title>Health Log – Auth (Cognito)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;background:#0b1220;color:#eaeef8}
-    .wrap{max-width:860px;margin:24px auto;padding:16px}
-    h1{font-size:20px;margin:0 0 16px}
-    .card{background:#121a2b;border:1px solid #1e2a44;border-radius:14px;padding:16px;margin-bottom:14px}
+    /* ===== NUEVO UI: layout tipo teléfono ===== */
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      margin:0;
+      background:#e5e7eb;
+      color:#111827;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+    }
+    .wrap{
+      width:380px;
+      max-width:100%;
+      padding:16px;
+    }
+    .phone-shell{
+      background:#111827;
+      border-radius:32px;
+      padding:10px;
+      box-shadow:0 18px 45px rgba(15,23,42,.5);
+    }
+    .phone-screen{
+      background:#f9fafb;
+      border-radius:26px;
+      overflow:hidden;
+      min-height:600px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    h1{font-size:20px;margin:0 0 12px}
+    .card{padding:16px}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-    label{font-size:12px;color:#9fb0d1;margin-bottom:4px;display:block}
-    input,select{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #2a3b63;background:#0f1728;color:#eaeef8}
-    .row{margin-bottom:10px}
-    .btn{border:0;border-radius:10px;padding:10px 12px;cursor:pointer}
-    .primary{background:#2280ff;color:white}
-    .secondary{background:#2a3b63;color:#eaeef8}
-    .danger{background:#e33;color:white}
-    .muted{color:#9fb0d1;font-size:12px}
-    .ok{color:#71f3a3}
-    .err{color:#ff8484}
-    code{background:#0f1728;padding:2px 6px;border-radius:6px}
+    label{font-size:12px;color:#6b7280;margin-bottom:4px;display:block}
+    input,select{
+      width:100%;padding:10px 12px;border-radius:10px;
+      border:1px solid #d1d5db;background:#fff;color:#111827;
+      font-size:14px;
+    }
+    input:focus,select:focus{
+      outline:none;border-color:#2563eb;box-shadow:0 0 0 1px #2563eb33;
+    }
+    .row{margin-bottom:12px}
+    .btn{
+      border:0;border-radius:999px;padding:10px 14px;cursor:pointer;
+      font-size:14px;font-weight:500;
+    }
+    .primary{background:#111827;color:white}
+    .secondary{background:#e5e7eb;color:#111827}
+    .danger{background:#ef4444;color:white}
+    .muted{color:#6b7280;font-size:12px}
+    .ok{color:#16a34a}
+    .err{color:#dc2626}
+    code{background:#e5e7eb;padding:2px 6px;border-radius:6px;font-size:11px}
     .hidden{display:none}
     .avatar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-    .avatar{border:1px solid #2a3b63;border-radius:10px;padding:8px;text-align:center;cursor:pointer}
-    .avatar.selected{outline:2px solid #2280ff}
-    .sep{height:1px;background:#1e2a44;margin:10px 0}
+    .avatar{
+      border:1px solid #d1d5db;border-radius:10px;padding:6px;text-align:center;
+      cursor:pointer;font-size:11px;background:#fff;
+    }
+    .avatar.selected{outline:2px solid #2563eb;border-color:#2563eb}
+    .sep{height:1px;background:#e5e7eb;margin:10px 0}
+
+    /* Cabecera de login estilo mockup */
+    .login-header{
+      background:#111827;
+      color:#f9fafb;
+      padding:24px 20px 32px;
+      border-bottom-left-radius:60px;
+    }
+    .login-header-title{
+      font-size:24px;
+      line-height:1.2;
+      font-weight:600;
+    }
+    .login-header-sub{font-size:12px;opacity:.8}
+
+    .login-body{
+      padding:20px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+    .login-footer-links{
+      display:flex;
+      justify-content:space-between;
+      margin:4px 0 16px;
+      font-size:12px;
+      color:#6b7280;
+    }
+    .link-btn{
+      background:none;
+      border:none;
+      padding:0;
+      margin:0;
+      color:#111827;
+      font-size:12px;
+      cursor:pointer;
+      text-decoration:underline;
+    }
+
+    .screen-title{
+      font-size:18px;
+      font-weight:600;
+      margin:8px 0 16px;
+      text-align:center;
+    }
+
+    .status-top{
+      padding:4px 16px 0;
+      font-size:11px;
+      text-align:center;
+    }
+
+    /* Sesión / JSON box */
+    #sess-attrs,#sess-logs{
+      white-space:pre-wrap;
+      background:#111827;
+      color:#e5e7eb;
+      border-radius:10px;
+      padding:10px;
+      border:1px solid #1f2937;
+      font-size:11px;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Health Log — Cognito (Paso 1)</h1>
+    <div class="phone-shell">
+      <div class="phone-screen">
+        <div class="status-top"><span id="status" class="muted"></span></div>
 
-    <!-- ESTADO / MENSAJES -->
-    <div id="status" class="muted"></div>
+        <!-- ===== LOGIN (pantalla inicial) ===== -->
+        <div id="view-login" class="card">
+          <div class="login-header"><!-- NUEVO UI -->
+            <div class="login-header-title">Health<br>Log</div>
+            <div class="login-header-sub">Registra tu salud día a día</div>
+          </div>
+          <div class="login-body">
+            <h2 class="screen-title">Inicia sesión</h2>
+            <div class="row">
+              <label>Correo</label>
+              <input type="email" id="li-email" placeholder="tucorreo@ejemplo.com">
+            </div>
+            <div class="row">
+              <label>Contraseña</label>
+              <input type="password" id="li-pass" placeholder="••••••••">
+            </div>
 
-    <!-- SIGN UP -->
-    <div class="card" id="view-signup">
-      <h3>Crear cuenta</h3>
-      <div class="grid">
-        <div class="row"><label>Correo</label><input type="email" id="su-email" placeholder="tucorreo@ejemplo.com"></div>
-        <div class="row"><label>Contraseña</label><input type="password" id="su-pass" placeholder="mín. 8 caracteres"></div>
-        <div class="row"><label>Nombre(s)</label><input type="text" id="su-first" placeholder="Nombre(s)"></div>
-        <div class="row"><label>Apellido(s)</label><input type="text" id="su-last" placeholder="Apellido(s)"></div>
-        <div class="row"><label>Fecha de nacimiento</label><input type="date" id="su-birth"></div>
-        <div class="row"><label>Género</label>
-          <select id="su-gender">
-            <option value="H">Hombre</option>
-            <option value="M">Mujer</option>
-          </select>
+            <div class="login-footer-links">
+              <span>¿Olvidaste tu contraseña?</span>
+              <button class="link-btn" id="go-signup-from-login">Crear cuenta</button> <!-- NUEVO UI -->
+            </div>
+
+            <button class="btn primary" id="btn-login">Entrar</button>
+          </div>
         </div>
-        <div class="row"><label>Nivel de actividad</label>
-          <select id="su-activity">
-            <option value="sedentario">Sedentario</option>
-            <option value="leve">Leve</option>
-            <option value="moderado">Moderado</option>
-            <option value="en_forma">En forma</option>
-            <option value="atleta">Atleta</option>
-          </select>
+
+        <!-- ===== SIGN UP (pantalla aparte) ===== -->
+        <div class="card hidden" id="view-signup">
+          <div class="login-body">
+            <button class="link-btn" id="back-to-login" style="margin-bottom:8px;">← Volver a iniciar sesión</button> <!-- NUEVO UI -->
+            <h2 class="screen-title">Crear cuenta</h2>
+            <div class="grid">
+              <div class="row"><label>Correo</label><input type="email" id="su-email" placeholder="tucorreo@ejemplo.com"></div>
+              <div class="row"><label>Contraseña</label><input type="password" id="su-pass" placeholder="mín. 8 caracteres"></div>
+              <div class="row"><label>Nombre(s)</label><input type="text" id="su-first" placeholder="Nombre(s)"></div>
+              <div class="row"><label>Apellido(s)</label><input type="text" id="su-last" placeholder="Apellido(s)"></div>
+              <div class="row"><label>Fecha de nacimiento</label><input type="date" id="su-birth"></div>
+              <div class="row">
+                <label>Género</label>
+                <select id="su-gender">
+                  <option value="H">Hombre</option>
+                  <option value="M">Mujer</option>
+                </select>
+              </div>
+              <div class="row">
+                <label>Nivel de actividad</label>
+                <select id="su-activity">
+                  <option value="sedentario">Sedentario</option>
+                  <option value="leve">Leve</option>
+                  <option value="moderado">Moderado</option>
+                  <option value="en_forma">En forma</option>
+                  <option value="atleta">Atleta</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <label>Avatar (elige 1 de 10)</label>
+              <div class="avatar-grid" id="avatar-grid"></div>
+            </div>
+
+            <button class="btn primary" id="btn-signup">Registrarme</button>
+          </div>
         </div>
+
+        <!-- ===== CONFIRM CODE ===== -->
+        <div class="card hidden" id="view-confirm">
+          <div class="login-body">
+            <button class="link-btn" id="back-to-login-from-confirm" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
+            <h2 class="screen-title">Confirmar correo</h2>
+            <div class="row"><label>Correo</label><input type="email" id="cf-email" placeholder="tu email"></div>
+            <div class="row"><label>Código de verificación</label><input type="text" id="cf-code" placeholder="código enviado por email"></div>
+            <button class="btn primary" id="btn-confirm" style="margin-top:8px;">Confirmar</button>
+            <button class="btn secondary" id="btn-resend" style="margin-top:6px;">Reenviar código</button>
+          </div>
+        </div>
+
+        <!-- ===== SESIÓN INICIADA ===== -->
+        <div class="card hidden" id="view-session">
+          <div class="login-body">
+            <h2 class="screen-title">Sesión iniciada</h2>
+            <div class="muted" style="margin-bottom:4px;">Usuario: <span id="sess-email"></span></div>
+            <div class="muted" style="margin-bottom:8px;">ID Token (recortado): <code id="sess-idtoken"></code></div>
+            <div class="sep"></div>
+            <div class="muted">Atributos:</div>
+            <pre id="sess-attrs"></pre>
+            <button class="btn danger" id="btn-logout" style="margin-top:10px;">Cerrar sesión</button>
+
+            <!-- Pruebas API AWS -->
+            <div class="sep"></div>
+            <div class="muted" style="margin-bottom:6px;">Pruebas con la API en AWS:</div>
+            <button class="btn secondary" id="btn-test-save" style="margin-bottom:6px;">Guardar log de prueba</button>
+            <button class="btn secondary" id="btn-test-load">Cargar logs</button>
+
+            <div class="sep"></div>
+            <div class="muted">Logs recibidos:</div>
+            <pre id="sess-logs"></pre>
+          </div>
+        </div>
+
       </div>
-
-      <div class="row">
-        <label>Avatar (elige 1 de 10)</label>
-        <div class="avatar-grid" id="avatar-grid"></div>
-      </div>
-
-      <button class="btn primary" id="btn-signup">Registrarme</button>
-      <div class="sep"></div>
-      <div class="muted">¿Ya tienes cuenta? <button class="btn secondary" id="go-login">Ir a iniciar sesión</button></div>
-      <div id="signup-msg" class="muted"></div>
-    </div>
-
-    <!-- CONFIRM CODE -->
-    <div class="card hidden" id="view-confirm">
-      <h3>Confirmar correo</h3>
-      <div class="grid">
-        <div class="row"><label>Correo</label><input type="email" id="cf-email" placeholder="tu email"></div>
-        <div class="row"><label>Código de verificación</label><input type="text" id="cf-code" placeholder="código enviado por email"></div>
-      </div>
-      <button class="btn primary" id="btn-confirm">Confirmar</button>
-      <button class="btn secondary" id="btn-resend">Reenviar código</button>
-      <div id="confirm-msg" class="muted"></div>
-    </div>
-
-    <!-- LOGIN -->
-    <div class="card hidden" id="view-login">
-      <h3>Iniciar sesión</h3>
-      <div class="grid">
-        <div class="row"><label>Correo</label><input type="email" id="li-email"></div>
-        <div class="row"><label>Contraseña</label><input type="password" id="li-pass"></div>
-      </div>
-      <button class="btn primary" id="btn-login">Entrar</button>
-      <div id="login-msg" class="muted"></div>
-    </div>
-
-    <!-- LOGGED IN -->
-    <div class="card hidden" id="view-session">
-      <h3>Sesión iniciada</h3>
-      <div class="muted">Usuario: <span id="sess-email"></span></div>
-      <div class="muted">ID Token (recortado): <code id="sess-idtoken"></code></div>
-      <div class="sep"></div>
-      <div class="muted">Atributos:</div>
-      <pre id="sess-attrs" style="white-space:pre-wrap;background:#0f1728;border:1px solid #2a3b63;border-radius:10px;padding:10px;"></pre>
-      <button class="btn danger" id="btn-logout">Cerrar sesión</button>
-
-      <!-- NUEVO: Controles para probar la API de AWS (Lambda + DynamoDB) -->
-      <div class="sep"></div>
-      <div class="muted" style="margin-bottom:6px;">Pruebas con la API en AWS:</div>
-      <button class="btn secondary" id="btn-test-save">Guardar log de prueba</button>
-      <button class="btn secondary" id="btn-test-load">Cargar logs</button>
-
-      <div class="sep"></div>
-      <div class="muted">Logs recibidos:</div>
-      <pre id="sess-logs" style="white-space:pre-wrap;background:#0f1728;border:1px solid #2a3b63;border-radius:10px;padding:10px;max-height:200px;overflow:auto;"></pre>
-      <!-- FIN NUEVO -->
     </div>
   </div>
 
@@ -124,12 +248,12 @@
   <script>
     // ======= CONFIGURA ESTO CON TUS DATOS =======
     const COGNITO_CONFIG = {
-      region: 'us-east-2',                // ej. 'us-east-2'
-      userPoolId: 'us-east-2_vqmICro9s',  // tu User Pool ID
-      clientId: '3urf9cvd0hrcn0ok5prog4fm2v'   // tu App Client ID
+      region: 'us-east-2',
+      userPoolId: 'us-east-2_vqmICro9s',
+      clientId: '3urf9cvd0hrcn0ok5prog4fm2v'
     };
 
-    const API_URL = "https://qrmjqw5uon6c4ydfocz2v2m3cm0rkggr.lambda-url.us-east-2.on.aws/"; // NUEVO: URL de la Lambda
+    const API_URL = "https://qrmjqw5uon6c4ydfocz2v2m3cm0rkggr.lambda-url.us-east-2.on.aws/";
     // ============================================
 
     // UI helpers
@@ -140,7 +264,7 @@
       const el = $('#status'); el.className=cls; el.textContent = msg||'';
     };
 
-    // Avatares (10 opciones simples; sustitúyelas por imágenes reales luego)
+    // Avatares
     const avatarGrid = $('#avatar-grid');
     let selectedAvatar = 'avatar1';
     for (let i=1;i<=10;i++){
@@ -156,26 +280,29 @@
       avatarGrid.appendChild(d);
     }
 
-    // Cognito objects
+    // Cognito
     const poolData = { UserPoolId: COGNITO_CONFIG.userPoolId, ClientId: COGNITO_CONFIG.clientId };
     const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
-    // Navegación básica
-    const gotoSignup = ()=>{ show('#view-signup'); hide('#view-login'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
-    const gotoLogin  = ()=>{ hide('#view-signup'); show('#view-login'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
-    const gotoConfirm= ()=>{ hide('#view-signup'); hide('#view-login'); show('#view-confirm'); hide('#view-session'); setStatus('Se envió un código de verificación a tu correo.', 'muted'); };
-    const gotoSession= ()=>{ hide('#view-signup'); hide('#view-login'); hide('#view-confirm'); show('#view-session'); };
+    // Navegación básica  (NUEVO UI: login como pantalla por defecto)
+    const gotoSignup = ()=>{ hide('#view-login'); show('#view-signup'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
+    const gotoLogin  = ()=>{ show('#view-login'); hide('#view-signup'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
+    const gotoConfirm= ()=>{ hide('#view-login'); hide('#view-signup'); show('#view-confirm'); hide('#view-session'); setStatus('Se envió un código de verificación a tu correo.', 'muted'); };
+    const gotoSession= ()=>{ hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); show('#view-session'); };
 
-    $('#go-login').addEventListener('click', gotoLogin);
+    // Botones de navegación UI
+    $('#go-signup-from-login').addEventListener('click', gotoSignup);        // NUEVO UI
+    $('#back-to-login').addEventListener('click', gotoLogin);                // NUEVO UI
+    $('#back-to-login-from-confirm').addEventListener('click', gotoLogin);   // NUEVO UI
 
-    // ======= SIGN UP =======
+    // ===== SIGN UP =====
     $('#btn-signup').addEventListener('click', ()=>{
       const email = $('#su-email').value.trim();
       const pass  = $('#su-pass').value.trim();
       const first = $('#su-first').value.trim();
       const last  = $('#su-last').value.trim();
-      const birth = $('#su-birth').value; // YYYY-MM-DD
-      const sex   = $('#su-gender').value;   // 'H' | 'M'
+      const birth = $('#su-birth').value;
+      const sex   = $('#su-gender').value;
       const act   = $('#su-activity').value;
 
       if(!email||!pass||!first||!last||!birth){ setStatus('Faltan campos obligatorios.', 'err'); return; }
@@ -192,13 +319,12 @@
 
       userPool.signUp(email, pass, attrs, null, (err, result)=>{
         if(err){ setStatus(err.message||String(err), 'err'); return; }
-        $('#cf-email').value = email; // precargar para confirmar
+        $('#cf-email').value = email;
         gotoConfirm();
       });
     });
 
-    // ======= CONFIRMATION (code) =======
-    let lastCognitoUser = null;
+    // ===== CONFIRMATION =====
     function getUserByEmail(email){
       return new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
     }
@@ -224,7 +350,7 @@
       });
     });
 
-    // ======= LOGIN =======
+    // ===== LOGIN =====
     $('#btn-login').addEventListener('click', ()=>{
       const email = $('#li-email').value.trim();
       const pass  = $('#li-pass').value.trim();
@@ -235,11 +361,10 @@
 
       user.authenticateUser(authDetails, {
         onSuccess: (result)=>{
-          // tokens
           const idToken  = result.getIdToken().getJwtToken();
           const access   = result.getAccessToken().getJwtToken();
           const refresh  = result.getRefreshToken().getToken();
-          // guardar para siguientes pasos (Lambda)
+
           localStorage.setItem('hl_id_token', idToken);
           localStorage.setItem('hl_access_token', access);
           localStorage.setItem('hl_refresh_token', refresh);
@@ -247,15 +372,14 @@
           $('#sess-email').textContent = email;
           $('#sess-idtoken').textContent = idToken.slice(0,24)+'...';
 
-          // obtener atributos
           user.getUserAttributes((err, attrs)=>{
             if(err){ setStatus(err.message||String(err), 'err'); return; }
             const obj = {};
             attrs.forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
 
-            if (obj.sub) {                       // NUEVO: guardar sub como userId
-              localStorage.setItem('hl_user_sub', obj.sub);
+            if (obj.sub) {
+              localStorage.setItem('hl_user_sub', obj.sub); // userId para DynamoDB
             }
 
             gotoSession();
@@ -268,19 +392,19 @@
       });
     });
 
-    // ======= LOGOUT =======
+    // ===== LOGOUT =====
     $('#btn-logout').addEventListener('click', ()=>{
       const cu = userPool.getCurrentUser();
       if(cu){ cu.signOut(); }
       localStorage.removeItem('hl_id_token');
       localStorage.removeItem('hl_access_token');
       localStorage.removeItem('hl_refresh_token');
-      localStorage.removeItem('hl_user_sub'); // NUEVO: limpiar también el userId
+      localStorage.removeItem('hl_user_sub');
       setStatus('Sesión cerrada.', 'muted');
       gotoLogin();
     });
 
-    // ======= AUTO-UI (si ya había sesión) =======
+    // ===== AUTO-UI (si ya había sesión) =====
     window.addEventListener('load', ()=>{
       const cu = userPool.getCurrentUser();
       if(cu){
@@ -292,20 +416,18 @@
           cu.getUserAttributes((err, attrs)=>{
             const obj={}; (attrs||[]).forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
-
-            if (obj.sub) {                       // NUEVO: también aquí, por si entra con sesión previa
+            if (obj.sub) {
               localStorage.setItem('hl_user_sub', obj.sub);
             }
-
             gotoSession();
           });
         });
       } else {
-        gotoSignup();
+        gotoLogin(); // NUEVO UI: mostrar login primero
       }
     });
 
-    // ======= NUEVO: funciones para llamar a la API de AWS (Lambda + DynamoDB) =======
+    // ===== API AWS (Lambda + DynamoDB) =====
     function getCurrentUserId() {
       return localStorage.getItem('hl_user_sub');
     }
@@ -316,10 +438,9 @@
         setStatus("No hay userId (sub). Cierra sesión y vuelve a entrar.", "err");
         return;
       }
-
       const now = new Date();
-      const date = now.toISOString().slice(0,10);      // YYYY-MM-DD
-      const time = now.toTimeString().slice(0,5);      // HH:MM
+      const date = now.toISOString().slice(0,10);
+      const time = now.toTimeString().slice(0,5);
 
       const payload = {
         userId,
@@ -356,7 +477,6 @@
         setStatus("No hay userId (sub). Cierra sesión y vuelve a entrar.", "err");
         return;
       }
-
       try {
         const url = API_URL + "?userId=" + encodeURIComponent(userId);
         const res = await fetch(url);
@@ -375,11 +495,8 @@
       }
     }
 
-    const btnTestSave = $('#btn-test-save');
-    const btnTestLoad = $('#btn-test-load');
-    if (btnTestSave) btnTestSave.addEventListener('click', apiSaveTestLog);
-    if (btnTestLoad) btnTestLoad.addEventListener('click', apiLoadLogs);
-    // ======= FIN NUEVO =======
+    $('#btn-test-save').addEventListener('click', apiSaveTestLog);
+    $('#btn-test-load').addEventListener('click', apiLoadLogs);
   </script>
 </body>
 </html>
