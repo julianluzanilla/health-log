@@ -2,785 +2,490 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Health Log – Auth (Cognito)</title>
+  <title>Health Log</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* ===== Layout general, sin marco de smartphone ===== */
-    body{
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      margin:0;
-      background:#0b1220;
-      color:#111827;
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      min-height:100vh;
-      padding:16px;
+    :root{
+      --bg:#0b1220; --bg-2:#0f1728; --panel:#121a2b; --muted:#9fb0d1;
+      --line:#1e2a44; --accent:#2280ff; --text:#eaeef8; --ok:#16a34a; --err:#ef4444;
     }
-    .shell{
-      width:100%;
-      max-width:960px;
-      background:#f9fafb;
-      border-radius:24px;
-      box-shadow:0 18px 45px rgba(15,23,42,.45);
-      padding:16px 16px 20px;
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:var(--text)}
+    .container{max-width:1100px;margin:0 auto;padding:16px}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+    .row{display:flex;gap:16px}
+    .col{flex:1}
+    .muted{color:var(--muted)}
+    .btn{border:1px solid var(--line);background:var(--bg-2);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer}
+    .btn:hover{border-color:#2a3b63}
+    .btn.primary{background:var(--accent);border-color:var(--accent)}
+    .btn.danger{background:#e33;border-color:#e33}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3b63;background:var(--bg-2);color:var(--text)}
+    textarea{min-height:80px;resize:vertical}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;margin:8px 0 16px}
+    .title{font-size:20px;font-weight:700}
+    /* Header */
+    .appbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+    .user-chip{display:flex;align-items:center;gap:10px;position:relative}
+    .avatar{width:34px;height:34px;border-radius:50%;display:inline-grid;place-content:center;background:#24314d;border:1px solid #2a3b63;font-weight:700}
+    .user-menu{position:absolute;right:0;top:42px;background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:210px;display:none;z-index:10}
+    .user-menu.open{display:block}
+    .user-menu .item{padding:10px 12px;cursor:pointer}
+    .user-menu .item:hover{background:var(--bg-2)}
+    /* Listado */
+    .list{display:flex;flex-direction:column;gap:8px}
+    .log-item{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:10px}
+    .chip{font-size:11px;padding:2px 8px;border-radius:999px;background:#24314d;border:1px solid #2a3b63;margin-left:6px}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+    /* Modal */
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:#0008;z-index:30}
+    .modal.open{display:grid}
+    .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(680px,92vw);max-height:90vh;overflow:auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .right{display:flex;justify-content:flex-end;gap:8px}
+    /* Responsive */
+    @media (max-width: 840px){
+      .row{flex-direction:column}
+      .grid,.grid-3{grid-template-columns:1fr}
     }
-    .screen{
-      border-radius:18px;
-      overflow:hidden;
-    }
-    .status-top{
-      text-align:center;
-      font-size:12px;
-      padding-bottom:6px;
-      min-height:18px;
-    }
-
-    h1{font-size:20px;margin:0 0 10px;text-align:left}
-    h2.screen-title{font-size:18px;margin:8px 0 16px;text-align:center}
-    .card{padding:16px}
-    label{font-size:12px;color:#6b7280;margin-bottom:4px;display:block}
-    input,select,textarea{
-      width:100%;
-      padding:9px 11px;
-      border-radius:10px;
-      border:1px solid #d1d5db;
-      background:#fff;
-      color:#111827;
-      font-size:14px;
-      box-sizing:border-box;
-    }
-    input:focus,select:focus,textarea:focus{
-      outline:none;border-color:#2563eb;box-shadow:0 0 0 1px #2563eb33;
-    }
-    textarea{min-height:70px;resize:vertical;}
-    .row{margin-bottom:12px}
-    .btn{
-      border:0;border-radius:999px;padding:10px 14px;cursor:pointer;
-      font-size:14px;font-weight:500;
-    }
-    .primary{background:#111827;color:white}
-    .secondary{background:#e5e7eb;color:#111827}
-    .danger{background:#ef4444;color:white}
-    .muted{color:#6b7280;font-size:12px}
-    .ok{color:#16a34a}
-    .err{color:#dc2626}
-    code{background:#e5e7eb;padding:2px 6px;border-radius:6px;font-size:11px}
-    .hidden{display:none}
-    .avatar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-    .avatar{
-      border:1px solid #d1d5db;border-radius:10px;padding:6px;text-align:center;
-      cursor:pointer;font-size:11px;background:#fff;
-    }
-    .avatar.selected{outline:2px solid #2563eb;border-color:#2563eb}
-    .sep{height:1px;background:#e5e7eb;margin:10px 0}
-
-    .link-btn{
-      background:none;border:none;padding:0;margin:0;
-      color:#111827;font-size:12px;cursor:pointer;
-      text-decoration:underline;
-    }
-
-    .login-header{
-      background:#111827;color:#f9fafb;
-      padding:20px 18px 26px;
-      border-radius:18px 18px 40px 40px;
-      margin:-16px -16px 0 -16px;
-    }
-    .login-header-title{font-size:22px;line-height:1.2;font-weight:600}
-    .login-header-sub{font-size:12px;opacity:.8}
-
-    .login-body{padding:20px 4px 4px}
-
-    .login-footer-links{
-      display:flex;justify-content:space-between;
-      margin:4px 0 16px;font-size:12px;color:#6b7280;
-    }
-
-    #sess-attrs,#logs-list{
-      white-space:pre-wrap;
-      background:#111827;
-      color:#e5e7eb;
-      border-radius:10px;
-      padding:10px;
-      border:1px solid #1f2937;
-      font-size:11px;
-    }
-
-    .logs-header{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-bottom:8px;
-    }
-    .logs-header select{
-      width:auto;min-width:140px;
-    }
-    .log-item{
-      background:#0f1728;
-      color:#e5e7eb;
-      border-radius:10px;
-      padding:8px 10px;
-      margin-bottom:6px;
-      border:1px solid #1f2937;
-      font-size:12px;
-    }
-    .log-item-head{
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      margin-bottom:2px;
-      font-weight:500;
-    }
-    .tag{
-      font-size:11px;
-      padding:1px 7px;
-      border-radius:999px;
-      background:#111827;
-      border:1px solid #374151;
-    }
-
-    .session-layout{
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-    }
-    @media (min-width: 800px){
-      .session-layout{
-        display:grid;
-        grid-template-columns:minmax(0,1.05fr) minmax(0,1.2fr);
-        gap:18px;
-        align-items:flex-start;
-      }
-    }
-
-    .section-title{
-      font-size:14px;
-      font-weight:600;
-      margin-bottom:8px;
-    }
+    /* Ocultar barra de estado global salvo errores */
+    #status.err{display:block}
+    #status{display:none;text-align:center;padding:8px 0}
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="screen">
-      <div class="status-top"><span id="status" class="muted"></span></div>
-
-      <!-- ===== LOGIN ===== -->
-      <div id="view-login" class="card">
-        <div class="login-header">
-          <div class="login-header-title">Health Log</div>
-          <div class="login-header-sub">Registra tus síntomas y mediciones</div>
+  <div class="container">
+    <!-- APP BAR -->
+    <div class="appbar">
+      <div class="title">Health Log</div>
+      <div class="user-chip hidden" id="user-chip">
+        <span id="user-name" class="muted"></span>
+        <div id="user-avatar" class="avatar">U</div>
+        <div class="user-menu" id="user-menu">
+          <div class="item" id="menu-edit">Editar perfil</div>
+          <div class="item" id="menu-logout">Cerrar sesión</div>
         </div>
-        <div class="login-body">
-          <h2 class="screen-title">Inicia sesión</h2>
-          <div class="row">
-            <label>Correo</label>
-            <input type="email" id="li-email" placeholder="tucorreo@ejemplo.com">
-          </div>
-          <div class="row">
-            <label>Contraseña</label>
-            <input type="password" id="li-pass" placeholder="••••••••">
-          </div>
-          <div class="login-footer-links">
-            <span>¿Olvidaste tu contraseña?</span>
-            <button class="link-btn" id="go-signup-from-login">Crear cuenta</button>
-          </div>
-          <button class="btn primary" id="btn-login">Entrar</button>
+      </div>
+    </div>
+
+    <div id="status" class="err"></div>
+
+    <!-- ====== LOGIN (pantalla) ====== -->
+    <div id="view-login" class="card" style="padding:16px;">
+      <div class="title" style="margin-bottom:10px;">Inicia sesión</div>
+      <div class="row">
+        <div class="col">
+          <label class="muted">Correo</label>
+          <input type="email" id="li-email" placeholder="tucorreo@ejemplo.com">
+        </div>
+        <div class="col">
+          <label class="muted">Contraseña</label>
+          <input type="password" id="li-pass" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="right" style="margin-top:10px;">
+        <button class="btn" id="go-signup">Crear cuenta</button>
+        <button class="btn primary" id="btn-login">Entrar</button>
+      </div>
+    </div>
+
+    <!-- ====== SIGNUP (pantalla) ====== -->
+    <div id="view-signup" class="card hidden" style="padding:16px;">
+      <div class="title" style="margin-bottom:10px;">Crear cuenta</div>
+      <div class="grid">
+        <div><label class="muted">Correo</label><input type="email" id="su-email"></div>
+        <div><label class="muted">Contraseña</label><input type="password" id="su-pass"></div>
+        <div><label class="muted">Nombre(s)</label><input type="text" id="su-first"></div>
+        <div><label class="muted">Apellido(s)</label><input type="text" id="su-last"></div>
+        <div><label class="muted">Fecha de nacimiento</label><input type="date" id="su-birth"></div>
+        <div>
+          <label class="muted">Género</label>
+          <select id="su-gender"><option value="H">Hombre</option><option value="M">Mujer</option></select>
+        </div>
+        <div>
+          <label class="muted">Nivel de actividad</label>
+          <select id="su-activity">
+            <option value="sedentario">Sedentario</option><option value="leve">Leve</option>
+            <option value="moderado">Moderado</option><option value="en_forma">En forma</option>
+            <option value="atleta">Atleta</option>
+          </select>
+        </div>
+        <div>
+          <label class="muted">Avatar (id)</label>
+          <select id="su-avatar">
+            <option>avatar1</option><option>avatar2</option><option>avatar3</option><option>avatar4</option><option>avatar5</option>
+            <option>avatar6</option><option>avatar7</option><option>avatar8</option><option>avatar9</option><option>avatar10</option>
+          </select>
+        </div>
+      </div>
+      <div class="right" style="margin-top:10px;">
+        <button class="btn" id="back-login">Volver</button>
+        <button class="btn primary" id="btn-signup">Registrarme</button>
+      </div>
+    </div>
+
+    <!-- ====== CONFIRM (pantalla) ====== -->
+    <div id="view-confirm" class="card hidden" style="padding:16px;">
+      <div class="title" style="margin-bottom:10px;">Confirmar correo</div>
+      <div class="row">
+        <div class="col"><label class="muted">Correo</label><input type="email" id="cf-email"></div>
+        <div class="col"><label class="muted">Código</label><input type="text" id="cf-code"></div>
+      </div>
+      <div class="right" style="margin-top:10px;">
+        <button class="btn" id="btn-resend">Reenviar código</button>
+        <button class="btn primary" id="btn-confirm">Confirmar</button>
+      </div>
+    </div>
+
+    <!-- ====== HOME (EN SESIÓN) ====== -->
+    <div id="view-home" class="hidden">
+      <div class="toolbar">
+        <div class="title">Mis registros</div>
+        <div class="row" style="gap:8px;align-items:center">
+          <select id="filter-type" class="btn" style="padding:8px 10px;">
+            <option value="Todos">Todos</option>
+            <option value="dolor">Dolor</option>
+            <option value="mareo">Mareo</option>
+            <option value="lpm">Toma de LPM</option>
+            <option value="presion">Presión arterial</option>
+            <option value="medicamento">Medicamento</option>
+            <option value="bano">Baño</option>
+          </select>
+          <button class="btn" id="btn-refresh">Refrescar</button>
+          <button class="btn primary" id="btn-new">+ Nuevo registro</button>
         </div>
       </div>
 
-      <!-- ===== SIGN UP ===== -->
-      <div class="card hidden" id="view-signup">
-        <div class="login-body">
-          <button class="link-btn" id="back-to-login" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
-          <h2 class="screen-title">Crear cuenta</h2>
-          <div class="row"><label>Correo</label><input type="email" id="su-email" placeholder="tucorreo@ejemplo.com"></div>
-          <div class="row"><label>Contraseña</label><input type="password" id="su-pass" placeholder="mín. 8 caracteres"></div>
-          <div class="row"><label>Nombre(s)</label><input type="text" id="su-first" placeholder="Nombre(s)"></div>
-          <div class="row"><label>Apellido(s)</label><input type="text" id="su-last" placeholder="Apellido(s)"></div>
-          <div class="row"><label>Fecha de nacimiento</label><input type="date" id="su-birth"></div>
-          <div class="row">
-            <label>Género</label>
-            <select id="su-gender">
-              <option value="H">Hombre</option>
-              <option value="M">Mujer</option>
-            </select>
-          </div>
-          <div class="row">
-            <label>Nivel de actividad</label>
-            <select id="su-activity">
-              <option value="sedentario">Sedentario</option>
-              <option value="leve">Leve</option>
-              <option value="moderado">Moderado</option>
-              <option value="en_forma">En forma</option>
-              <option value="atleta">Atleta</option>
-            </select>
-          </div>
-          <div class="row">
-            <label>Avatar (elige 1 de 10)</label>
-            <div class="avatar-grid" id="avatar-grid"></div>
-          </div>
-          <button class="btn primary" id="btn-signup">Registrarme</button>
-        </div>
+      <div class="card" style="padding:16px;">
+        <div id="list" class="list"></div>
       </div>
-
-      <!-- ===== CONFIRM CODE ===== -->
-      <div class="card hidden" id="view-confirm">
-        <div class="login-body">
-          <button class="link-btn" id="back-to-login-from-confirm" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
-          <h2 class="screen-title">Confirmar correo</h2>
-          <div class="row"><label>Correo</label><input type="email" id="cf-email" placeholder="tu email"></div>
-          <div class="row"><label>Código de verificación</label><input type="text" id="cf-code" placeholder="código enviado por email"></div>
-          <button class="btn primary" id="btn-confirm" style="margin-top:8px;">Confirmar</button>
-          <button class="btn secondary" id="btn-resend" style="margin-top:6px;">Reenviar código</button>
-        </div>
-      </div>
-
-      <!-- ===== SESIÓN INICIADA / APP ===== -->
-      <div class="card hidden" id="view-session">
-        <div class="login-body">
-          <h2 class="screen-title">Sesión iniciada</h2>
-          <div class="muted" style="margin-bottom:4px;">Usuario: <span id="sess-email"></span></div>
-          <div class="muted" style="margin-bottom:8px;">ID Token (recortado): <code id="sess-idtoken"></code></div>
-          <div class="sep"></div>
-          <div class="muted" style="margin-bottom:4px;">Atributos del usuario:</div>
-          <pre id="sess-attrs"></pre>
-          <button class="btn danger" id="btn-logout" style="margin-top:10px;">Cerrar sesión</button>
-
-          <div class="sep"></div>
-
-          <div class="session-layout">
-            <!-- Columna izquierda: formulario nuevo registro -->
-            <div>
-              <div class="section-title">Nuevo registro</div>
-              <div class="row">
-                <label>Fecha</label>
-                <input type="date" id="log-date">
-              </div>
-              <div class="row">
-                <label>Hora</label>
-                <input type="time" id="log-time">
-              </div>
-              <div class="row">
-                <label>Tipo de registro</label>
-                <select id="log-type">
-                  <option value="dolor">Dolor</option>
-                  <option value="mareo">Mareo</option>
-                  <option value="lpm">Toma de LPM</option>
-                  <option value="presion">Presión arterial</option>
-                  <option value="medicamento">Toma de medicamento</option>
-                  <option value="bano">Visita al baño</option>
-                </select>
-              </div>
-
-              <div id="log-extra"></div>
-
-              <div class="row">
-                <label>Observaciones / notas</label>
-                <textarea id="log-notes" placeholder="Opcional"></textarea>
-              </div>
-
-              <button class="btn primary" id="btn-save-log">Guardar registro</button>
-            </div>
-
-            <!-- Columna derecha: historial -->
-            <div>
-              <div class="section-title">Historial</div>
-              <div class="logs-header">
-                <label style="margin:0;font-size:12px;">Filtrar por tipo:</label>
-                <select id="filter-type">
-                  <option value="todos">Todos</option>
-                  <option value="dolor">Dolor</option>
-                  <option value="mareo">Mareo</option>
-                  <option value="lpm">LPM</option>
-                  <option value="presion">Presión</option>
-                  <option value="medicamento">Medicamento</option>
-                  <option value="bano">Baño</option>
-                </select>
-                <button class="btn secondary" id="btn-refresh-logs" style="margin-left:auto;">Refrescar</button>
-              </div>
-              <div id="logs-list"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- SDK Cognito (UMD) -->
-  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
+  <!-- MODAL NUEVO REGISTRO -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="title" style="margin-bottom:10px;">Nuevo registro</div>
+      <div class="grid">
+        <div>
+          <label class="muted">Fecha</label>
+          <input type="date" id="f-date">
+        </div>
+        <div>
+          <label class="muted">Hora</label>
+          <input type="time" id="f-time">
+        </div>
+      </div>
+      <div class="grid" style="margin-top:8px;">
+        <div>
+          <label class="muted">Tipo</label>
+          <select id="f-type">
+            <option value="dolor">Dolor</option>
+            <option value="mareo">Mareo</option>
+            <option value="lpm">Toma de LPM</option>
+            <option value="presion">Presión arterial</option>
+            <option value="medicamento">Toma de medicamento</option>
+            <option value="bano">Visita al baño</option>
+          </select>
+        </div>
+        <div id="g-dolor" class="hidden">
+          <label class="muted">Zona (dolor)</label>
+          <select id="f-dolor-zone">
+            <option value="cabeza">Cabeza</option><option value="espalda">Espalda</option>
+            <option value="ciatica">Ciática</option><option value="cuello">Cuello</option><option value="ojos">Ojos</option>
+          </select>
+        </div>
+        <div id="g-duracion" class="hidden">
+          <label class="muted">Duración (minutos, 0 = constante)</label>
+          <input type="number" id="f-duration" min="0" step="1" value="0">
+        </div>
+        <div id="g-intensidad" class="hidden">
+          <label class="muted">Intensidad (1 a 10)</label>
+          <input type="number" id="f-intensity" min="1" max="10" step="1" value="5">
+        </div>
+        <div id="g-lpm" class="hidden">
+          <label class="muted">LPM (resultado)</label>
+          <input type="number" id="f-lpm" min="1" step="1">
+        </div>
+        <div id="g-presion" class="hidden">
+          <label class="muted">Presión (sistólica / diastólica / lpm opcional)</label>
+          <div class="grid-3">
+            <input type="number" id="f-sis" placeholder="Sistólica" min="1">
+            <input type="number" id="f-dia" placeholder="Diastólica" min="1">
+            <input type="number" id="f-pulse" placeholder="LPM (opcional)" min="1">
+          </div>
+        </div>
+        <div id="g-medic" class="hidden">
+          <label class="muted">Medicamento / dosis</label>
+          <div class="grid">
+            <input id="f-med-name" placeholder="Nombre (pregrabados en futuro)">
+            <input id="f-med-dose" placeholder="Dosis">
+          </div>
+        </div>
+        <div id="g-bano" class="hidden">
+          <label class="muted">Tipo</label>
+          <select id="f-bano-type"><option value="pipi">Pipí</option><option value="popo">Popó</option></select>
+        </div>
+        <div id="g-bano-cant" class="hidden">
+          <label class="muted">Cantidad</label>
+          <select id="f-bano-cant">
+            <option value="muy_poco">Muy poco</option><option value="poco">Poco</option>
+            <option value="regular">Regular</option><option value="mucho">Mucho</option>
+          </select>
+        </div>
+      </div>
 
+      <div class="sep"></div>
+      <label class="muted">Observaciones</label>
+      <textarea id="f-notes" placeholder="Opcional: contexto, condiciones, etc."></textarea>
+
+      <div class="right" style="margin-top:12px;">
+        <button class="btn" id="btn-cancel">Cancelar</button>
+        <button class="btn primary" id="btn-save">Guardar registro</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SDK Cognito -->
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
   <script>
-    // ======= CONFIGURA ESTO CON TUS DATOS =======
+    // ========= CONFIG =========
     const COGNITO_CONFIG = {
       region: 'us-east-2',
       userPoolId: 'us-east-2_vqmICro9s',
       clientId: '3urf9cvd0hrcn0ok5prog4fm2v'
     };
-
     const API_URL = "https://qrmjqw5uon6c4ydfocz2v2m3cm0rkggr.lambda-url.us-east-2.on.aws/";
-    // ============================================
 
+    // ========= Helpers UI =========
     const $ = (s)=>document.querySelector(s);
-    const show = (id)=>$(id).classList.remove('hidden');
-    const hide = (id)=>$(id).classList.add('hidden');
-    const setStatus = (msg, cls='muted')=>{
-      const el = $('#status'); el.className=cls; el.textContent = msg||'';
-    };
+    const show = (s)=>$(s).classList.remove('hidden');
+    const hide = (s)=>$(s).classList.add('hidden');
 
-    // Avatares
-    const avatarGrid = $('#avatar-grid');
-    let selectedAvatar = 'avatar1';
-    for (let i=1;i<=10;i++){
-      const d = document.createElement('div');
-      d.className = 'avatar'+(i===1?' selected':'');
-      d.dataset.id = 'avatar'+i;
-      d.textContent = 'avatar'+i;
-      d.addEventListener('click',()=>{
-        selectedAvatar = d.dataset.id;
-        [...avatarGrid.children].forEach(c=>c.classList.remove('selected'));
-        d.classList.add('selected');
-      });
-      avatarGrid.appendChild(d);
+    const setError = (msg)=>{ const el=$('#status'); el.textContent=msg||''; el.className=msg?'err':'err'; el.style.display = msg? 'block':'none'; };
+
+    // ========= Cognito =========
+    const pool = new AmazonCognitoIdentity.CognitoUserPool({UserPoolId: COGNITO_CONFIG.userPoolId, ClientId: COGNITO_CONFIG.clientId});
+
+    function uiTo(section){
+      hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); hide('#view-home');
+      if(section) show(section);
+      $('#user-chip').classList.toggle('hidden', section!=='#view-home');
     }
 
-    // Cognito
-    const poolData = { UserPoolId: COGNITO_CONFIG.userPoolId, ClientId: COGNITO_CONFIG.clientId };
-    const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-
-    // Navegación
-    const gotoSignup = ()=>{ hide('#view-login'); show('#view-signup'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
-    const gotoLogin  = ()=>{ show('#view-login'); hide('#view-signup'); hide('#view-confirm'); hide('#view-session'); setStatus(''); };
-    const gotoConfirm= ()=>{ hide('#view-login'); hide('#view-signup'); show('#view-confirm'); hide('#view-session'); setStatus('Se envió un código de verificación a tu correo.', 'muted'); };
-    const gotoSession= ()=>{ hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); show('#view-session'); setDefaultsForNewLog(); };
-
-    $('#go-signup-from-login').addEventListener('click', gotoSignup);
-    $('#back-to-login').addEventListener('click', gotoLogin);
-    $('#back-to-login-from-confirm').addEventListener('click', gotoLogin);
-
-    // ===== SIGN UP =====
-    $('#btn-signup').addEventListener('click', ()=>{
-      const email = $('#su-email').value.trim();
-      const pass  = $('#su-pass').value.trim();
-      const first = $('#su-first').value.trim();
-      const last  = $('#su-last').value.trim();
-      const birth = $('#su-birth').value;
-      const sex   = $('#su-gender').value;
-      const act   = $('#su-activity').value;
-
-      if(!email||!pass||!first||!last||!birth){ setStatus('Faltan campos obligatorios.', 'err'); return; }
-
-      const attrs = [
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'email', Value: email }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:firstName', Value: first }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:lastName',  Value: last }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:birthdate', Value: birth }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:gender',    Value: sex }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:activityLevel', Value: act }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:avatarId',  Value: selectedAvatar })
-      ];
-
-      userPool.signUp(email, pass, attrs, null, (err, result)=>{
-        if(err){ setStatus(err.message||String(err), 'err'); return; }
-        $('#cf-email').value = email;
-        gotoConfirm();
+    // Login
+    $('#btn-login').addEventListener('click', ()=>{
+      const email=$('#li-email').value.trim(), pass=$('#li-pass').value.trim();
+      if(!email||!pass){ setError('Ingresa correo y contraseña.'); return; }
+      const user=new AmazonCognitoIdentity.CognitoUser({Username:email, Pool:pool});
+      const auth=new AmazonCognitoIdentity.AuthenticationDetails({Username:email, Password:pass});
+      user.authenticateUser(auth,{
+        onSuccess:(res)=>{
+          const idToken=res.getIdToken().getJwtToken();
+          localStorage.setItem('hl_id_token', idToken);
+          localStorage.setItem('hl_access_token', res.getAccessToken().getJwtToken());
+          localStorage.setItem('hl_refresh_token', res.getRefreshToken().getToken());
+          user.getUserAttributes((err,attrs)=>{
+            if(err){ setError(err.message||String(err)); return; }
+            const obj={}; attrs.forEach(a=>obj[a.getName()]=a.getValue());
+            localStorage.setItem('hl_user_sub', obj.sub||'');
+            localStorage.setItem('hl_user_first', obj['custom:firstName']||'');
+            localStorage.setItem('hl_user_last', obj['custom:lastName']||'');
+            localStorage.setItem('hl_user_avatar', obj['custom:avatarId']||'avatar1');
+            paintUserChip();
+            uiTo('#view-home');
+            refreshLogs(); // carga inicial
+          });
+        },
+        onFailure:(e)=>setError(e.message||String(e))
       });
     });
 
-    // ===== CONFIRM =====
-    function getUserByEmail(email){
-      return new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
-    }
+    // Signup
+    $('#go-signup').addEventListener('click', ()=>uiTo('#view-signup'));
+    $('#back-login').addEventListener('click', ()=>uiTo('#view-login'));
+
+    $('#btn-signup').addEventListener('click', ()=>{
+      const email=$('#su-email').value.trim(), pass=$('#su-pass').value.trim();
+      const first=$('#su-first').value.trim(), last=$('#su-last').value.trim();
+      const birth=$('#su-birth').value, gender=$('#su-gender').value, act=$('#su-activity').value, avatar=$('#su-avatar').value;
+      if(!email||!pass||!first||!last||!birth){ setError('Faltan campos obligatorios.'); return; }
+      const attrs=[
+        ['email',email], ['custom:firstName',first], ['custom:lastName',last],
+        ['custom:birthdate',birth], ['custom:gender',gender], ['custom:activityLevel',act], ['custom:avatarId',avatar]
+      ].map(([Name,Value])=>new AmazonCognitoIdentity.CognitoUserAttribute({Name,Value}));
+
+      pool.signUp(email, pass, attrs, null, (err)=>{
+        if(err){ setError(err.message||String(err)); return; }
+        $('#cf-email').value = email;
+        uiTo('#view-confirm');
+      });
+    });
+
+    // Confirm
     $('#btn-confirm').addEventListener('click', ()=>{
-      const email = $('#cf-email').value.trim();
-      const code  = $('#cf-code').value.trim();
-      if(!email||!code){ setStatus('Ingresa correo y código.', 'err'); return; }
-      const user = getUserByEmail(email);
-      user.confirmRegistration(code, true, (err, res)=>{
-        if(err){ setStatus(err.message||String(err), 'err'); return; }
-        setStatus('Correo confirmado. Ya puedes iniciar sesión.', 'ok');
-        gotoLogin();
-        $('#li-email').value = email;
+      const email=$('#cf-email').value.trim(), code=$('#cf-code').value.trim();
+      if(!email||!code){ setError('Ingresa correo y código.'); return; }
+      const user=new AmazonCognitoIdentity.CognitoUser({Username:email, Pool:pool});
+      user.confirmRegistration(code, true, (err)=>{
+        if(err){ setError(err.message||String(err)); return; }
+        uiTo('#view-login');
+        $('#li-email').value=email;
       });
     });
     $('#btn-resend').addEventListener('click', ()=>{
-      const email = $('#cf-email').value.trim();
-      if(!email){ setStatus('Ingresa tu correo para reenviar el código.', 'err'); return; }
-      const user = getUserByEmail(email);
-      user.resendConfirmationCode((err,res)=>{
-        if(err){ setStatus(err.message||String(err), 'err'); return; }
-        setStatus('Código reenviado. Revisa tu correo.', 'ok');
-      });
+      const email=$('#cf-email').value.trim();
+      if(!email){ setError('Ingresa tu correo.'); return; }
+      const user=new AmazonCognitoIdentity.CognitoUser({Username:email, Pool:pool});
+      user.resendConfirmationCode((e)=> e && setError(e.message||String(e)));
     });
 
-    // ===== LOGIN =====
-    $('#btn-login').addEventListener('click', ()=>{
-      const email = $('#li-email').value.trim();
-      const pass  = $('#li-pass').value.trim();
-      if(!email||!pass){ setStatus('Ingresa correo y contraseña.', 'err'); return; }
-
-      const authDetails = new AmazonCognitoIdentity.AuthenticationDetails({ Username: email, Password: pass });
-      const user = getUserByEmail(email);
-
-      user.authenticateUser(authDetails, {
-        onSuccess: (result)=>{
-          const idToken  = result.getIdToken().getJwtToken();
-          const access   = result.getAccessToken().getJwtToken();
-          const refresh  = result.getRefreshToken().getToken();
-
-          localStorage.setItem('hl_id_token', idToken);
-          localStorage.setItem('hl_access_token', access);
-          localStorage.setItem('hl_refresh_token', refresh);
-
-          $('#sess-email').textContent = email;
-          $('#sess-idtoken').textContent = idToken.slice(0,24)+'...';
-
-          user.getUserAttributes((err, attrs)=>{
-            if(err){ setStatus(err.message||String(err), 'err'); return; }
-            const obj = {};
-            attrs.forEach(a=>obj[a.getName()]=a.getValue());
-            $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
-            if (obj.sub) localStorage.setItem('hl_user_sub', obj.sub);
-            gotoSession();
-            setStatus('Sesión iniciada.', 'ok');
-            loadHealthLogs(); // cargar historial al entrar
-          });
-        },
-        onFailure: (err)=>{
-          setStatus(err.message||String(err), 'err');
-        }
-      });
+    // User chip (avatar + menu)
+    function paintUserChip(){
+      const first=localStorage.getItem('hl_user_first')||'';
+      const last =localStorage.getItem('hl_user_last')||'';
+      const av   =localStorage.getItem('hl_user_avatar')||'avatar1';
+      $('#user-name').textContent = `${first} ${last}`.trim();
+      $('#user-avatar').textContent = (first?first[0]:'U').toUpperCase();
+      $('#user-avatar').title = av;
+    }
+    $('#user-chip').addEventListener('click', ()=>$('#user-menu').classList.toggle('open'));
+    document.addEventListener('click',(e)=>{
+      if(!$('#user-chip').contains(e.target)) $('#user-menu').classList.remove('open');
+    });
+    $('#menu-edit').addEventListener('click', ()=>{ alert('Próximo: pantalla de perfil (fecha de nacimiento, peso, estatura, etc.).'); });
+    $('#menu-logout').addEventListener('click', ()=>{
+      const cu=pool.getCurrentUser(); if(cu) cu.signOut();
+      localStorage.clear(); uiTo('#view-login');
     });
 
-    // ===== LOGOUT =====
-    $('#btn-logout').addEventListener('click', ()=>{
-      const cu = userPool.getCurrentUser();
-      if(cu){ cu.signOut(); }
-      localStorage.removeItem('hl_id_token');
-      localStorage.removeItem('hl_access_token');
-      localStorage.removeItem('hl_refresh_token');
-      localStorage.removeItem('hl_user_sub');
-      setStatus('Sesión cerrada.', 'muted');
-      gotoLogin();
-    });
-
-    // ===== AUTO LOGIN UI =====
+    // Auto sesión
     window.addEventListener('load', ()=>{
-      const cu = userPool.getCurrentUser();
-      if(cu){
-        cu.getSession((err,session)=>{
-          if(err || !session || !session.isValid()){ gotoLogin(); return; }
-          $('#li-email').value = cu.getUsername();
-          $('#sess-email').textContent = cu.getUsername();
-          $('#sess-idtoken').textContent = session.getIdToken().getJwtToken().slice(0,24)+'...';
-          cu.getUserAttributes((err, attrs)=>{
-            const obj={}; (attrs||[]).forEach(a=>obj[a.getName()]=a.getValue());
-            $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
-            if (obj.sub) localStorage.setItem('hl_user_sub', obj.sub);
-            gotoSession();
-            loadHealthLogs();
-          });
+      const cu=pool.getCurrentUser();
+      if(!cu){ uiTo('#view-login'); return; }
+      cu.getSession((err,s)=>{
+        if(err||!s?.isValid()){ uiTo('#view-login'); return; }
+        cu.getUserAttributes((e,attrs)=>{
+          const obj={}; (attrs||[]).forEach(a=>obj[a.getName()]=a.getValue());
+          localStorage.setItem('hl_user_sub', obj.sub||'');
+          localStorage.setItem('hl_user_first', obj['custom:firstName']||'');
+          localStorage.setItem('hl_user_last', obj['custom:lastName']||'');
+          localStorage.setItem('hl_user_avatar', obj['custom:avatarId']||'avatar1');
+          paintUserChip(); uiTo('#view-home'); refreshLogs();
         });
-      } else {
-        gotoLogin();
-      }
+      });
     });
 
-    // ===== APP: formulario de salud + historial =====
-    function getCurrentUserId() {
-      return localStorage.getItem('hl_user_sub');
+    // ========= API (Lambda) =========
+    function getUserId(){ return localStorage.getItem('hl_user_sub')||''; }
+
+    async function apiPost(obj){
+      const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
+      const data=await res.json(); if(!res.ok||!data.ok) throw new Error('POST failed'); return data;
     }
-    function todayDateStr(){
-      const d = new Date();
-      const m = String(d.getMonth()+1).padStart(2,'0');
-      const day = String(d.getDate()).padStart(2,'0');
-      return `${d.getFullYear()}-${m}-${day}`;
-    }
-    function timeStr(){
-      const d = new Date();
-      const h = String(d.getHours()).padStart(2,'0');
-      const m = String(d.getMinutes()).padStart(2,'0');
-      return `${h}:${m}`;
+    async function apiGet(userId){
+      const res=await fetch(API_URL+'?userId='+encodeURIComponent(userId));
+      const data=await res.json(); if(!res.ok||!data.ok) throw new Error('GET failed'); return data.logs||[];
     }
 
-    function setDefaultsForNewLog(){
-      const dateInput = $('#log-date');
-      const timeInput = $('#log-time');
-      if(dateInput && !dateInput.value) dateInput.value = todayDateStr();
-      if(timeInput && !timeInput.value) timeInput.value = timeStr();
-      renderExtraFields();
-    }
+    // ========= Listado =========
+    $('#btn-refresh').addEventListener('click', refreshLogs);
+    $('#filter-type').addEventListener('change', renderList);
 
-    function renderExtraFields(){
-      const type = $('#log-type').value;
-      const c = $('#log-extra');
-      if(!c) return;
-      let html = '';
-      if(type === 'dolor'){
-        html = `
-          <div class="row">
-            <label>Zona del dolor</label>
-            <select id="log-dolor-zona">
-              <option value="cabeza">Cabeza</option>
-              <option value="espalda">Espalda</option>
-              <option value="ciatica">Ciática</option>
-              <option value="cuello">Cuello</option>
-              <option value="ojos">Ojos</option>
-            </select>
-          </div>
-          <div class="row">
-            <label>Duración (minutos, 0 si constante)</label>
-            <input type="number" id="log-dolor-duracion" min="0" step="1" value="0">
-          </div>
-          <div class="row">
-            <label>Intensidad (1 a 10)</label>
-            <input type="number" id="log-dolor-intensidad" min="1" max="10" step="1" value="5">
-          </div>
-        `;
-      } else if(type === 'mareo'){
-        html = `
-          <div class="row">
-            <label>Duración (minutos)</label>
-            <input type="number" id="log-mareo-duracion" min="0" step="1" value="0">
-          </div>
-          <div class="row">
-            <label>Intensidad (1 a 10)</label>
-            <input type="number" id="log-mareo-intensidad" min="1" max="10" step="1" value="5">
-          </div>
-        `;
-      } else if(type === 'lpm'){
-        html = `
-          <div class="row">
-            <label>Resultado (latidos por minuto)</label>
-            <input type="number" id="log-lpm-valor" min="20" max="250" step="1">
-          </div>
-        `;
-      } else if(type === 'presion'){
-        html = `
-          <div class="row">
-            <label>Presión sistólica</label>
-            <input type="number" id="log-pres-sistolica" min="50" max="250" step="1">
-          </div>
-          <div class="row">
-            <label>Presión diastólica</label>
-            <input type="number" id="log-pres-diastolica" min="30" max="200" step="1">
-          </div>
-          <div class="row">
-            <label>LPM (opcional)</label>
-            <input type="number" id="log-pres-lpm" min="20" max="250" step="1">
-          </div>
-        `;
-      } else if(type === 'medicamento'){
-        html = `
-          <div class="row">
-            <label>Nombre del medicamento</label>
-            <input type="text" id="log-med-nombre" placeholder="Ej. Ibuprofeno 400mg">
-          </div>
-          <div class="row">
-            <label>Dosis</label>
-            <input type="text" id="log-med-dosis" placeholder="Ej. 1 tableta">
-          </div>
-          <div class="row">
-            <label>Síntoma presentado (opcional)</label>
-            <input type="text" id="log-med-sintoma" placeholder="Dolor de cabeza, fiebre, etc.">
-          </div>
-        `;
-      } else if(type === 'bano'){
-        html = `
-          <div class="row">
-            <label>Tipo</label>
-            <select id="log-bano-tipo">
-              <option value="pipi">Pipí</option>
-              <option value="popo">Popó</option>
-            </select>
-          </div>
-          <div class="row">
-            <label>Cantidad</label>
-            <select id="log-bano-cantidad">
-              <option value="muy_poco">Muy poco</option>
-              <option value="poco">Poco</option>
-              <option value="normal">Regular</option>
-              <option value="mucho">Mucho</option>
-            </select>
-          </div>
-        `;
-      }
-      c.innerHTML = html;
-    }
-    $('#log-type').addEventListener('change', renderExtraFields);
-
-    async function saveHealthLog(){
-      const userId = getCurrentUserId();
-      if(!userId){
-        setStatus("No hay usuario. Vuelve a iniciar sesión.", "err");
-        return;
-      }
-      const date = $('#log-date').value || todayDateStr();
-      const time = $('#log-time').value || timeStr();
-      const type = $('#log-type').value;
-      const notes = $('#log-notes').value.trim();
-
-      let subtype = "";
-      let payload = {};
-
+    let allLogs=[];
+    async function refreshLogs(){
       try{
-        if(type === 'dolor'){
-          const zona = $('#log-dolor-zona').value;
-          const dur  = parseInt($('#log-dolor-duracion').value || "0",10);
-          const inten= parseInt($('#log-dolor-intensidad').value || "0",10);
-          subtype = zona;
-          payload = { zona, duracionMin: dur, intensidad: inten };
-        } else if(type === 'mareo'){
-          const dur  = parseInt($('#log-mareo-duracion').value || "0",10);
-          const inten= parseInt($('#log-mareo-intensidad').value || "0",10);
-          payload = { duracionMin: dur, intensidad: inten };
-        } else if(type === 'lpm'){
-          const val = parseInt($('#log-lpm-valor').value || "0",10);
-          payload = { lpm: val };
-        } else if(type === 'presion'){
-          const sis = parseInt($('#log-pres-sistolica').value || "0",10);
-          const dia = parseInt($('#log-pres-diastolica').value || "0",10);
-          const lpm = $('#log-pres-lpm').value ? parseInt($('#log-pres-lpm').value,10) : null;
-          payload = { sistolica: sis, diastolica: dia };
-          if(lpm !== null && !Number.isNaN(lpm)) payload.lpm = lpm;
-        } else if(type === 'medicamento'){
-          const nom = $('#log-med-nombre').value.trim();
-          const dos = $('#log-med-dosis').value.trim();
-          const sin = $('#log-med-sintoma').value.trim();
-          payload = { nombre: nom, dosis: dos, sintoma: sin };
-        } else if(type === 'bano'){
-          const t = $('#log-bano-tipo').value;
-          const c = $('#log-bano-cantidad').value;
-          subtype = t;
-          payload = { tipo: t, cantidad: c };
-        }
-      } catch(e){
-        console.error("Error leyendo campos:", e);
-        setStatus("Revisa los campos del formulario.", "err");
-        return;
+        setError('');
+        allLogs = await apiGet(getUserId());
+        renderList();
+      }catch(e){ setError('No se pudieron cargar los registros.'); }
+    }
+    function renderList(){
+      const type = $('#filter-type').value;
+      const cont = $('#list');
+      cont.innerHTML = '';
+      let items = allLogs.slice();
+      if(type!=='Todos') items = items.filter(x=>x.type===type);
+      if(!items.length){ cont.innerHTML = `<div class="muted">No hay registros.</div>`; return; }
+      for(const it of items){
+        const dt = `${it.date} ${it.time}`;
+        const sub = it.subtype ? ` <span class="chip">${it.type} · ${it.subtype}</span>` : ` <span class="chip">${it.type}</span>`;
+        const notes = it.notes ? ` · Obs: ${it.notes}` : '';
+        const extra = it.type==='lpm' ? ` · LPM: ${it.payload?.resultado??''}` :
+                      it.type==='presion' ? ` · ${it.payload?.sis??''}/${it.payload?.dia??''} (${it.payload?.lpm??'-'} lpm)` :
+                      it.type==='medicamento' ? ` · ${it.payload?.nombre??''} (${it.payload?.dosis??''})` :
+                      it.type==='bano' ? ` · ${it.payload?.clase??''} - ${it.payload?.cantidad??''}` : '';
+        const el = document.createElement('div');
+        el.className='log-item';
+        el.innerHTML = `<div style="font-size:12px" class="muted">${dt}${sub}</div>
+                        <div style="margin-top:4px">${extra}${notes}</div>`;
+        cont.appendChild(el);
       }
+    }
 
+    // ========= Modal nuevo registro =========
+    const modal = $('#modal');
+    $('#btn-new').addEventListener('click', ()=>{
+      openModalWithDefaults();
+      modal.classList.add('open');
+    });
+    $('#btn-cancel').addEventListener('click', ()=>{ clearForm(); modal.classList.remove('open'); });
+    $('#btn-save').addEventListener('click', saveForm);
+
+    $('#f-type').addEventListener('change', toggleGroups);
+
+    function openModalWithDefaults(){
+      const now = new Date();
+      $('#f-date').value = now.toISOString().slice(0,10);
+      $('#f-time').value = now.toTimeString().slice(0,5);
+      $('#f-type').value = 'dolor';
+      $('#f-intensity').value = 5;
+      $('#f-duration').value = 0;
+      $('#f-lpm').value = '';
+      $('#f-sis').value = ''; $('#f-dia').value=''; $('#f-pulse').value='';
+      $('#f-med-name').value=''; $('#f-med-dose').value='';
+      $('#f-bano-type').value='pipi'; $('#f-bano-cant').value='regular';
+      $('#f-notes').value='';
+      toggleGroups();
+    }
+    function clearForm(){ /* ya limpiado arriba al abrir/cancelar */ }
+
+    function toggleGroups(){
+      const t = $('#f-type').value;
+      // ocultar todo
+      ['#g-dolor','#g-duracion','#g-intensidad','#g-lpm','#g-presion','#g-medic','#g-bano','#g-bano-cant']
+        .forEach(hide);
+      if(t==='dolor'){ ['#g-dolor','#g-duracion','#g-intensidad'].forEach(show); }
+      if(t==='mareo'){ ['#g-duracion','#g-intensidad'].forEach(show); }
+      if(t==='lpm'){ show('#g-lpm'); }
+      if(t==='presion'){ show('#g-presion'); }
+      if(t==='medicamento'){ show('#g-medic'); }
+      if(t==='bano'){ ['#g-bano','#g-bano-cant'].forEach(show); }
+    }
+
+    async function saveForm(){
       try{
-        const res = await fetch(API_URL, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ userId, date, time, type, subtype, payload, notes })
-        });
-        const data = await res.json();
-        if(!res.ok || !data.ok){
-          console.error("Error API POST", data);
-          setStatus("Error al guardar en la API", "err");
-          return;
-        }
-        setStatus("Registro guardado en DynamoDB.", "ok");
-        // refrescar historial
-        loadHealthLogs();
-      } catch(e){
-        console.error(e);
-        setStatus("Error de red llamando a la API", "err");
-      }
-    }
-    $('#btn-save-log').addEventListener('click', saveHealthLog);
+        setError('');
+        const userId = getUserId();
+        if(!userId){ throw new Error('Sin usuario'); }
+        const date=$('#f-date').value, time=$('#f-time').value, type=$('#f-type').value;
+        const notes=$('#f-notes').value.trim();
+        let subtype='', payload={};
 
-    let lastLogs = [];
+        if(type==='dolor'){ subtype=$('#f-dolor-zone').value; payload={ intensidad: +$('#f-intensity').value||0, duracion: +$('#f-duration').value||0 }; }
+        if(type==='mareo'){ payload={ intensidad: +$('#f-intensity').value||0, duracion: +$('#f-duration').value||0 }; }
+        if(type==='lpm'){ payload={ resultado:+$('#f-lpm').value||0, obs:notes }; }
+        if(type==='presion'){ payload={ sis:+$('#f-sis').value||0, dia:+$('#f-dia').value||0, lpm:+$('#f-pulse').value||null }; }
+        if(type==='medicamento'){ payload={ nombre:$('#f-med-name').value.trim(), dosis:$('#f-med-dose').value.trim() }; }
+        if(type==='bano'){ payload={ clase:$('#f-bano-type').value, cantidad:$('#f-bano-cant').value }; }
 
-    function describeLog(log){
-      const p = log.payload || {};
-      const notes = log.notes ? ` · Obs: ${log.notes}` : '';
-      if(log.type === 'dolor'){
-        const zona = p.zona || log.subtype || '';
-        const inten = p.intensidad != null ? `intensidad ${p.intensidad}` : '';
-        const dur = p.duracionMin != null ? `${p.duracionMin} min` : '';
-        return `Dolor de ${zona} ${inten} ${dur}`.trim()+notes;
-      }
-      if(log.type === 'mareo'){
-        return `Mareo ${p.intensidad!=null?`intensidad ${p.intensidad}`:''} ${p.duracionMin!=null?`${p.duracionMin} min`:''}`.trim()+notes;
-      }
-      if(log.type === 'lpm'){
-        return `LPM: ${p.lpm||'–'}`+notes;
-      }
-      if(log.type === 'presion'){
-        const base = `Presión ${p.sistolica||'?'} / ${p.diastolica||'?'}${p.lpm!=null?` · ${p.lpm} lpm`:''}`;
-        return base+notes;
-      }
-      if(log.type === 'medicamento'){
-        const nom = p.nombre || 'Medicamento';
-        const dos = p.dosis ? ` · ${p.dosis}` : '';
-        const sin = p.sintoma ? ` · síntoma: ${p.sintoma}` : '';
-        return `${nom}${dos}${sin}${notes}`;
-      }
-      if(log.type === 'bano'){
-        const t = p.tipo || log.subtype || '';
-        const c = p.cantidad || '';
-        return `Baño: ${t} · ${c}${notes}`;
-      }
-      return notes || '';
+        await apiPost({ userId, date, time, type, subtype, payload, notes });
+        modal.classList.remove('open');
+        await refreshLogs();
+      }catch(e){ setError('No se pudo guardar el registro.'); }
     }
 
-    function renderLogsList(){
-      const cont = $('#logs-list');
-      if(!cont) return;
-      const filter = $('#filter-type').value || 'todos';
-      cont.textContent = '';
-      const logs = lastLogs || [];
-      if(logs.length === 0){
-        cont.textContent = 'No hay registros aún.';
-        return;
-      }
-      const frag = document.createDocumentFragment();
-      logs
-        .filter(l=> filter==='todos' || l.type===filter)
-        .forEach(log=>{
-          const div = document.createElement('div');
-          div.className = 'log-item';
-          const head = document.createElement('div');
-          head.className = 'log-item-head';
-          const left = document.createElement('div');
-          left.textContent = `${log.date} ${log.time}`;
-          const right = document.createElement('div');
-          const tag = document.createElement('span');
-          tag.className='tag';
-          tag.textContent = log.type + (log.subtype?` · ${log.subtype}`:'');
-          right.appendChild(tag);
-          head.appendChild(left);
-          head.appendChild(right);
-
-          const body = document.createElement('div');
-          body.textContent = describeLog(log);
-
-          div.appendChild(head);
-          div.appendChild(body);
-          frag.appendChild(div);
-        });
-
-      cont.appendChild(frag);
-    }
-
-    async function loadHealthLogs(){
-      const userId = getCurrentUserId();
-      if(!userId) return;
-      try{
-        const url = API_URL + "?userId=" + encodeURIComponent(userId);
-        const res = await fetch(url);
-        const data = await res.json();
-        if(!res.ok || !data.ok){
-          console.error("Error API GET", data);
-          setStatus("Error al leer de la API", "err");
-          return;
-        }
-        lastLogs = data.logs || [];
-        renderLogsList();
-        setStatus(`Se cargaron ${lastLogs.length} log(s) desde DynamoDB.`, "ok");
-      } catch(e){
-        console.error(e);
-        setStatus("Error de red llamando a la API", "err");
-      }
-    }
-    $('#filter-type').addEventListener('change', renderLogsList);
-    $('#btn-refresh-logs').addEventListener('click', loadHealthLogs);
   </script>
 </body>
 </html>
