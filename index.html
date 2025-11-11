@@ -241,8 +241,9 @@
             attrs.forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
 
-            // si luego quieres forzar aprobación, aquí consultaríamos tu flag "approved" (DynamoDB)
-            // y negaríamos el acceso si no está en true.
+            if (obj.sub) {
+              localStorage.setItem('hl_user_sub', obj.sub);
+            }
 
             gotoSession();
             setStatus('Sesión iniciada.', 'ok');
@@ -288,4 +289,5 @@
   </script>
 </body>
 </html>
+
 
