@@ -5,69 +5,84 @@
   <title>Health Log – Auth (Cognito)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* ===== Layout general responsive ===== */
-    :root{
-      color-scheme: light dark;
-    }
-    *{box-sizing:border-box;}
-
+    /* ===== LAYOUT GENERAL RESPONSIVE ===== */
     body{
-      margin:0;
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:linear-gradient(135deg,#e5e7eb,#c7d2fe);
+      margin:0;
+      background:#e5e7eb;
       color:#111827;
       min-height:100vh;
       display:flex;
       justify-content:center;
-      align-items:center;
-      padding:16px;
+      align-items:flex-start;
     }
-
-    /* Contenedor principal adaptable a móvil / desktop */
-    .app{
+    .app-shell{
       width:100%;
-      max-width:440px;
-      min-height:560px;
+      max-width:420px;           /* ancho cómodo para móvil y desktop */
+      margin:16px;
       background:#f9fafb;
       border-radius:24px;
-      box-shadow:0 18px 40px rgba(15,23,42,.35);
+      box-shadow:0 18px 45px rgba(15,23,42,.25);
+      overflow:hidden;
       display:flex;
       flex-direction:column;
-      overflow:hidden;
     }
-
     header.app-header{
-      padding:14px 18px 6px;
-      border-bottom:1px solid #e5e7eb;
-      text-align:center;
-      font-weight:600;
-      font-size:16px;
-      color:#111827;
-    }
-    header.app-header span.logo{
-      font-weight:700;
-    }
-
-    .status-top{
-      padding:4px 16px 0;
+      padding:12px 20px 6px;
       font-size:11px;
       text-align:center;
-      min-height:18px;
+      color:#6b7280;
     }
 
     main{
+      padding:0 20px 20px;
       flex:1;
-      padding:18px 18px 22px;
       display:flex;
       flex-direction:column;
     }
 
-    .card{flex:1;display:flex;flex-direction:column;}
+    @media (min-width: 768px){
+      body{
+        align-items:center;    /* centrar en pantallas grandes */
+      }
+      .app-shell{
+        max-width:460px;
+      }
+    }
+
+    /* ===== COMPONENTES ===== */
+    .status-top{
+      font-size:11px;
+      min-height:16px;
+    }
+    .card{padding:0;margin:0}
+
+    /* cabecera visual del login */
+    .login-header{
+      background:#111827;
+      color:#f9fafb;
+      padding:24px 20px 28px;
+      border-bottom-left-radius:40px;
+      border-bottom-right-radius:40px;
+      margin:0 -20px 12px;
+    }
+    .login-header-title{
+      font-size:24px;
+      line-height:1.2;
+      font-weight:600;
+    }
+    .login-header-sub{font-size:12px;opacity:.8}
+
+    .section-body{
+      padding-top:8px;
+      display:flex;
+      flex-direction:column;
+    }
 
     h2.screen-title{
       font-size:18px;
       font-weight:600;
-      margin:0 0 16px;
+      margin:8px 0 16px;
       text-align:center;
     }
 
@@ -77,7 +92,6 @@
       margin-bottom:4px;
       display:block;
     }
-
     input,select{
       width:100%;
       padding:10px 12px;
@@ -86,14 +100,14 @@
       background:#fff;
       color:#111827;
       font-size:14px;
+      box-sizing:border-box;
     }
     input:focus,select:focus{
       outline:none;
       border-color:#2563eb;
       box-shadow:0 0 0 1px #2563eb33;
     }
-
-    .row{margin-bottom:12px;}
+    .row{margin-bottom:12px}
 
     .btn{
       border:0;
@@ -102,56 +116,43 @@
       cursor:pointer;
       font-size:14px;
       font-weight:500;
-      width:100%;
     }
-    .primary{background:#111827;color:#f9fafb;}
-    .secondary{background:#e5e7eb;color:#111827;}
-    .danger{background:#ef4444;color:#fff;}
+    .primary{background:#111827;color:white}
+    .secondary{background:#e5e7eb;color:#111827}
+    .danger{background:#ef4444;color:white}
 
-    .muted{color:#6b7280;font-size:12px;}
-    .ok{color:#16a34a;}
-    .err{color:#dc2626;}
-    .hidden{display:none;}
-
-    .link-btn{
-      background:none;
-      border:none;
-      padding:0;
-      margin:0;
-      font-size:12px;
-      cursor:pointer;
-      text-decoration:underline;
-      color:#111827;
+    .muted{color:#6b7280;font-size:12px}
+    .ok{color:#16a34a}
+    .err{color:#dc2626}
+    code{
+      background:#e5e7eb;
+      padding:2px 6px;
+      border-radius:6px;
+      font-size:11px;
     }
+    .hidden{display:none}
+
+    .avatar-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px}
+    .avatar{
+      border:1px solid #d1d5db;border-radius:10px;padding:6px;text-align:center;
+      cursor:pointer;font-size:11px;background:#fff;
+    }
+    .avatar.selected{outline:2px solid #2563eb;border-color:#2563eb}
+
+    .sep{height:1px;background:#e5e7eb;margin:12px 0}
 
     .login-footer-links{
-      display:flex;
-      justify-content:space-between;
-      margin:4px 0 14px;
+      display:flex;justify-content:space-between;
+      margin:4px 0 16px;
       font-size:12px;
       color:#6b7280;
     }
-
-    .avatar-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(72px,1fr));
-      gap:6px;
-    }
-    .avatar{
-      border:1px solid #d1d5db;
-      border-radius:10px;
-      padding:6px;
-      text-align:center;
+    .link-btn{
+      background:none;border:none;padding:0;margin:0;
+      color:#111827;font-size:12px;
       cursor:pointer;
-      font-size:11px;
-      background:#fff;
+      text-decoration:underline;
     }
-    .avatar.selected{
-      outline:2px solid #2563eb;
-      border-color:#2563eb;
-    }
-
-    .sep{height:1px;background:#e5e7eb;margin:10px 0;}
 
     #sess-attrs,#sess-logs{
       white-space:pre-wrap;
@@ -162,112 +163,108 @@
       border:1px solid #1f2937;
       font-size:11px;
     }
-
-    /* Ajustes para pantallas muy pequeñas */
-    @media (max-width:480px){
-      body{
-        padding:8px;
-      }
-      .app{
-        border-radius:18px;
-        box-shadow:0 12px 30px rgba(15,23,42,.35);
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="app-shell"><!-- LAYOUT -->
     <header class="app-header">
-      <span class="logo">Health Log</span>
+      <span id="status" class="muted status-top"></span>
     </header>
 
-    <div class="status-top"><span id="status" class="muted"></span></div>
-
     <main>
-      <!-- ===== LOGIN (pantalla inicial) ===== -->
+      <!-- LOGIN (pantalla inicial) -->
       <section id="view-login" class="card">
-        <h2 class="screen-title">Inicia sesión</h2>
-        <div class="row">
-          <label>Correo</label>
-          <input type="email" id="li-email" placeholder="tucorreo@ejemplo.com">
+        <div class="login-header">
+          <div class="login-header-title">Health<br>Log</div>
+          <div class="login-header-sub">Registra tu salud día a día</div>
         </div>
-        <div class="row">
-          <label>Contraseña</label>
-          <input type="password" id="li-pass" placeholder="••••••••">
+        <div class="section-body">
+          <h2 class="screen-title">Inicia sesión</h2>
+          <div class="row">
+            <label>Correo</label>
+            <input type="email" id="li-email" placeholder="tucorreo@ejemplo.com">
+          </div>
+          <div class="row">
+            <label>Contraseña</label>
+            <input type="password" id="li-pass" placeholder="••••••••">
+          </div>
+          <div class="login-footer-links">
+            <span>¿Olvidaste tu contraseña?</span>
+            <button class="link-btn" id="go-signup-from-login">Crear cuenta</button>
+          </div>
+          <button class="btn primary" id="btn-login">Entrar</button>
         </div>
-
-        <div class="login-footer-links">
-          <span>¿Olvidaste tu contraseña?</span>
-          <button class="link-btn" id="go-signup-from-login">Crear cuenta</button>
-        </div>
-
-        <button class="btn primary" id="btn-login">Entrar</button>
       </section>
 
-      <!-- ===== SIGN UP ===== -->
+      <!-- SIGN UP -->
       <section id="view-signup" class="card hidden">
-        <button class="link-btn" id="back-to-login" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
-        <h2 class="screen-title">Crear cuenta</h2>
+        <div class="section-body">
+          <button class="link-btn" id="back-to-login" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
+          <h2 class="screen-title">Crear cuenta</h2>
+          <div class="row"><label>Correo</label><input type="email" id="su-email" placeholder="tucorreo@ejemplo.com"></div>
+          <div class="row"><label>Contraseña</label><input type="password" id="su-pass" placeholder="mín. 8 caracteres"></div>
+          <div class="row"><label>Nombre(s)</label><input type="text" id="su-first" placeholder="Nombre(s)"></div>
+          <div class="row"><label>Apellido(s)</label><input type="text" id="su-last" placeholder="Apellido(s)"></div>
+          <div class="row"><label>Fecha de nacimiento</label><input type="date" id="su-birth"></div>
+          <div class="row">
+            <label>Género</label>
+            <select id="su-gender">
+              <option value="H">Hombre</option>
+              <option value="M">Mujer</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>Nivel de actividad</label>
+            <select id="su-activity">
+              <option value="sedentario">Sedentario</option>
+              <option value="leve">Leve</option>
+              <option value="moderado">Moderado</option>
+              <option value="en_forma">En forma</option>
+              <option value="atleta">Atleta</option>
+            </select>
+          </div>
 
-        <div class="row"><label>Correo</label><input type="email" id="su-email" placeholder="tucorreo@ejemplo.com"></div>
-        <div class="row"><label>Contraseña</label><input type="password" id="su-pass" placeholder="mín. 8 caracteres"></div>
-        <div class="row"><label>Nombre(s)</label><input type="text" id="su-first" placeholder="Nombre(s)"></div>
-        <div class="row"><label>Apellido(s)</label><input type="text" id="su-last" placeholder="Apellido(s)"></div>
-        <div class="row"><label>Fecha de nacimiento</label><input type="date" id="su-birth"></div>
-        <div class="row">
-          <label>Género</label>
-          <select id="su-gender">
-            <option value="H">Hombre</option>
-            <option value="M">Mujer</option>
-          </select>
-        </div>
-        <div class="row">
-          <label>Nivel de actividad</label>
-          <select id="su-activity">
-            <option value="sedentario">Sedentario</option>
-            <option value="leve">Leve</option>
-            <option value="moderado">Moderado</option>
-            <option value="en_forma">En forma</option>
-            <option value="atleta">Atleta</option>
-          </select>
-        </div>
+          <div class="row">
+            <label>Avatar (elige 1 de 10)</label>
+            <div class="avatar-grid" id="avatar-grid"></div>
+          </div>
 
-        <div class="row">
-          <label>Avatar (elige 1 de 10)</label>
-          <div class="avatar-grid" id="avatar-grid"></div>
+          <button class="btn primary" id="btn-signup">Registrarme</button>
         </div>
-
-        <button class="btn primary" id="btn-signup">Registrarme</button>
       </section>
 
-      <!-- ===== CONFIRM CODE ===== -->
+      <!-- CONFIRM CODE -->
       <section id="view-confirm" class="card hidden">
-        <button class="link-btn" id="back-to-login-from-confirm" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
-        <h2 class="screen-title">Confirmar correo</h2>
-        <div class="row"><label>Correo</label><input type="email" id="cf-email" placeholder="tu email"></div>
-        <div class="row"><label>Código de verificación</label><input type="text" id="cf-code" placeholder="código enviado por email"></div>
-        <button class="btn primary" id="btn-confirm" style="margin-top:8px;">Confirmar</button>
-        <button class="btn secondary" id="btn-resend" style="margin-top:6px;">Reenviar código</button>
+        <div class="section-body">
+          <button class="link-btn" id="back-to-login-from-confirm" style="margin-bottom:8px;">← Volver a iniciar sesión</button>
+          <h2 class="screen-title">Confirmar correo</h2>
+          <div class="row"><label>Correo</label><input type="email" id="cf-email" placeholder="tu email"></div>
+          <div class="row"><label>Código de verificación</label><input type="text" id="cf-code" placeholder="código enviado por email"></div>
+          <button class="btn primary" id="btn-confirm" style="margin-top:8px;">Confirmar</button>
+          <button class="btn secondary" id="btn-resend" style="margin-top:6px;">Reenviar código</button>
+        </div>
       </section>
 
-      <!-- ===== SESIÓN INICIADA ===== -->
+      <!-- SESIÓN INICIADA -->
       <section id="view-session" class="card hidden">
-        <h2 class="screen-title">Sesión iniciada</h2>
-        <div class="muted" style="margin-bottom:4px;">Usuario: <span id="sess-email"></span></div>
-        <div class="muted" style="margin-bottom:8px;">ID Token (recortado): <code id="sess-idtoken"></code></div>
-        <div class="sep"></div>
-        <div class="muted">Atributos:</div>
-        <pre id="sess-attrs"></pre>
-        <button class="btn danger" id="btn-logout" style="margin-top:10px;">Cerrar sesión</button>
+        <div class="section-body">
+          <h2 class="screen-title">Sesión iniciada</h2>
+          <div class="muted" style="margin-bottom:4px;">Usuario: <span id="sess-email"></span></div>
+          <div class="muted" style="margin-bottom:8px;">ID Token (recortado): <code id="sess-idtoken"></code></div>
+          <div class="sep"></div>
+          <div class="muted">Atributos:</div>
+          <pre id="sess-attrs"></pre>
+          <button class="btn danger" id="btn-logout" style="margin-top:10px;">Cerrar sesión</button>
 
-        <div class="sep"></div>
-        <div class="muted" style="margin-bottom:6px;">Pruebas con la API en AWS:</div>
-        <button class="btn secondary" id="btn-test-save" style="margin-bottom:6px;">Guardar log de prueba</button>
-        <button class="btn secondary" id="btn-test-load">Cargar logs</button>
+          <div class="sep"></div>
+          <div class="muted" style="margin-bottom:6px;">Pruebas con la API en AWS:</div>
+          <button class="btn secondary" id="btn-test-save" style="margin-bottom:6px;">Guardar log de prueba</button>
+          <button class="btn secondary" id="btn-test-load">Cargar logs</button>
 
-        <div class="sep"></div>
-        <div class="muted">Logs recibidos:</div>
-        <pre id="sess-logs"></pre>
+          <div class="sep"></div>
+          <div class="muted">Logs recibidos:</div>
+          <pre id="sess-logs"></pre>
+        </div>
       </section>
     </main>
   </div>
@@ -291,7 +288,7 @@
     const show = (id)=>$(id).classList.remove('hidden');
     const hide = (id)=>$(id).classList.add('hidden');
     const setStatus = (msg, cls='muted')=>{
-      const el = $('#status'); el.className=cls; el.textContent = msg||'';
+      const el = $('#status'); el.className = cls + ' status-top'; el.textContent = msg||'';
     };
 
     // Avatares
@@ -320,12 +317,11 @@
     const gotoConfirm= ()=>{ hide('#view-login'); hide('#view-signup'); show('#view-confirm'); hide('#view-session'); setStatus('Se envió un código de verificación a tu correo.', 'muted'); };
     const gotoSession= ()=>{ hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); show('#view-session'); };
 
-    // Botones navegación
     $('#go-signup-from-login').addEventListener('click', gotoSignup);
     $('#back-to-login').addEventListener('click', gotoLogin);
     $('#back-to-login-from-confirm').addEventListener('click', gotoLogin);
 
-    // SIGN UP
+    // ===== SIGN UP =====
     $('#btn-signup').addEventListener('click', ()=>{
       const email = $('#su-email').value.trim();
       const pass  = $('#su-pass').value.trim();
@@ -335,9 +331,7 @@
       const sex   = $('#su-gender').value;
       const act   = $('#su-activity').value;
 
-      if(!email||!pass||!first||!last||!birth){
-        setStatus('Faltan campos obligatorios.', 'err'); return;
-      }
+      if(!email||!pass||!first||!last||!birth){ setStatus('Faltan campos obligatorios.', 'err'); return; }
 
       const attrs = [
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'email', Value: email }),
@@ -356,7 +350,7 @@
       });
     });
 
-    // Confirmación
+    // ===== CONFIRMATION =====
     function getUserByEmail(email){
       return new AmazonCognitoIdentity.CognitoUser({ Username: email, Pool: userPool });
     }
@@ -382,7 +376,7 @@
       });
     });
 
-    // LOGIN
+    // ===== LOGIN =====
     $('#btn-login').addEventListener('click', ()=>{
       const email = $('#li-email').value.trim();
       const pass  = $('#li-pass').value.trim();
@@ -409,9 +403,11 @@
             const obj = {};
             attrs.forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
+
             if (obj.sub) {
               localStorage.setItem('hl_user_sub', obj.sub);
             }
+
             gotoSession();
             setStatus('Sesión iniciada.', 'ok');
           });
@@ -422,7 +418,7 @@
       });
     });
 
-    // LOGOUT
+    // ===== LOGOUT =====
     $('#btn-logout').addEventListener('click', ()=>{
       const cu = userPool.getCurrentUser();
       if(cu){ cu.signOut(); }
@@ -434,7 +430,7 @@
       gotoLogin();
     });
 
-    // AUTO-UI
+    // ===== AUTO-UI =====
     window.addEventListener('load', ()=>{
       const cu = userPool.getCurrentUser();
       if(cu){
