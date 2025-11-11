@@ -44,10 +44,10 @@
         <div class="row"><label>Nombre(s)</label><input type="text" id="su-first" placeholder="Nombre(s)"></div>
         <div class="row"><label>Apellido(s)</label><input type="text" id="su-last" placeholder="Apellido(s)"></div>
         <div class="row"><label>Fecha de nacimiento</label><input type="date" id="su-birth"></div>
-        <div class="row"><label>Sexo</label>
-          <select id="su-sex">
-            <option value="M">Masculino</option>
-            <option value="F">Femenino</option>
+        <div class="row"><label>Género</label>
+          <select id="su-gender">
+            <option value="H">Hombre</option>
+            <option value="M">Mujer</option>
           </select>
         </div>
         <div class="row"><label>Nivel de actividad</label>
@@ -162,7 +162,7 @@
       const first = $('#su-first').value.trim();
       const last  = $('#su-last').value.trim();
       const birth = $('#su-birth').value; // YYYY-MM-DD
-      const sex   = $('#su-sex').value;   // 'M' | 'F'
+      const sex   = $('#su-gender').value;   // 'H' | 'M'
       const act   = $('#su-activity').value;
 
       if(!email||!pass||!first||!last||!birth){ setStatus('Faltan campos obligatorios.', 'err'); return; }
@@ -172,7 +172,7 @@
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:firstName', Value: first }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:lastName',  Value: last }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:birthdate', Value: birth }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:sex',       Value: sex }),
+        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:gender',       Value: sex }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:activityLevel', Value: act }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:avatarId',  Value: selectedAvatar })
       ];
@@ -288,3 +288,4 @@
   </script>
 </body>
 </html>
+
