@@ -104,6 +104,17 @@
       <div class="muted">Atributos:</div>
       <pre id="sess-attrs" style="white-space:pre-wrap;background:#0f1728;border:1px solid #2a3b63;border-radius:10px;padding:10px;"></pre>
       <button class="btn danger" id="btn-logout">Cerrar sesión</button>
+
+      <!-- NUEVO: Controles para probar la API de AWS (Lambda + DynamoDB) -->
+      <div class="sep"></div>
+      <div class="muted" style="margin-bottom:6px;">Pruebas con la API en AWS:</div>
+      <button class="btn secondary" id="btn-test-save">Guardar log de prueba</button>
+      <button class="btn secondary" id="btn-test-load">Cargar logs</button>
+
+      <div class="sep"></div>
+      <div class="muted">Logs recibidos:</div>
+      <pre id="sess-logs" style="white-space:pre-wrap;background:#0f1728;border:1px solid #2a3b63;border-radius:10px;padding:10px;max-height:200px;overflow:auto;"></pre>
+      <!-- FIN NUEVO -->
     </div>
   </div>
 
@@ -117,6 +128,8 @@
       userPoolId: 'us-east-2_vqmICro9s',  // tu User Pool ID
       clientId: '3urf9cvd0hrcn0ok5prog4fm2v'   // tu App Client ID
     };
+
+    const API_URL = "https://qrmjqw5uon6c4ydfocz2v2m3cm0rkggr.lambda-url.us-east-2.on.aws/"; // NUEVO: URL de la Lambda
     // ============================================
 
     // UI helpers
@@ -172,7 +185,7 @@
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:firstName', Value: first }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:lastName',  Value: last }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:birthdate', Value: birth }),
-        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:gender',       Value: sex }),
+        new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:gender',    Value: sex }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:activityLevel', Value: act }),
         new AmazonCognitoIdentity.CognitoUserAttribute({ Name:'custom:avatarId',  Value: selectedAvatar })
       ];
@@ -241,7 +254,7 @@
             attrs.forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
 
-            if (obj.sub) {
+            if (obj.sub) {                       // NUEVO: guardar sub como userId
               localStorage.setItem('hl_user_sub', obj.sub);
             }
 
@@ -251,7 +264,6 @@
         },
         onFailure: (err)=>{
           setStatus(err.message||String(err), 'err');
-          // mensajes comunes: UserNotConfirmedException, UserNotFoundException, NotAuthorizedException, User is disabled
         }
       });
     });
@@ -263,6 +275,7 @@
       localStorage.removeItem('hl_id_token');
       localStorage.removeItem('hl_access_token');
       localStorage.removeItem('hl_refresh_token');
+      localStorage.removeItem('hl_user_sub'); // NUEVO: limpiar también el userId
       setStatus('Sesión cerrada.', 'muted');
       gotoLogin();
     });
@@ -279,6 +292,11 @@
           cu.getUserAttributes((err, attrs)=>{
             const obj={}; (attrs||[]).forEach(a=>obj[a.getName()]=a.getValue());
             $('#sess-attrs').textContent = JSON.stringify(obj, null, 2);
+
+            if (obj.sub) {                       // NUEVO: también aquí, por si entra con sesión previa
+              localStorage.setItem('hl_user_sub', obj.sub);
+            }
+
             gotoSession();
           });
         });
@@ -286,8 +304,82 @@
         gotoSignup();
       }
     });
+
+    // ======= NUEVO: funciones para llamar a la API de AWS (Lambda + DynamoDB) =======
+    function getCurrentUserId() {
+      return localStorage.getItem('hl_user_sub');
+    }
+
+    async function apiSaveTestLog() {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        setStatus("No hay userId (sub). Cierra sesión y vuelve a entrar.", "err");
+        return;
+      }
+
+      const now = new Date();
+      const date = now.toISOString().slice(0,10);      // YYYY-MM-DD
+      const time = now.toTimeString().slice(0,5);      // HH:MM
+
+      const payload = {
+        userId,
+        date,
+        time,
+        type: "dolor",
+        subtype: "cabeza",
+        payload: { intensidad: 5 },
+        notes: "Log de prueba desde el navegador"
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          console.error("Error API POST", data);
+          setStatus("Error al guardar en la API", "err");
+          return;
+        }
+        setStatus("Log de prueba guardado en DynamoDB", "ok");
+      } catch (e) {
+        console.error(e);
+        setStatus("Error de red llamando a la API", "err");
+      }
+    }
+
+    async function apiLoadLogs() {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        setStatus("No hay userId (sub). Cierra sesión y vuelve a entrar.", "err");
+        return;
+      }
+
+      try {
+        const url = API_URL + "?userId=" + encodeURIComponent(userId);
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          console.error("Error API GET", data);
+          setStatus("Error al leer de la API", "err");
+          return;
+        }
+        const logs = data.logs || [];
+        $('#sess-logs').textContent = JSON.stringify(logs, null, 2);
+        setStatus(`Se cargaron ${logs.length} log(s) desde DynamoDB.`, "ok");
+      } catch (e) {
+        console.error(e);
+        setStatus("Error de red llamando a la API", "err");
+      }
+    }
+
+    const btnTestSave = $('#btn-test-save');
+    const btnTestLoad = $('#btn-test-load');
+    if (btnTestSave) btnTestSave.addEventListener('click', apiSaveTestLog);
+    if (btnTestLoad) btnTestLoad.addEventListener('click', apiLoadLogs);
+    // ======= FIN NUEVO =======
   </script>
 </body>
 </html>
-
-
