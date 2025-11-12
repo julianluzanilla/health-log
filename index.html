@@ -2,276 +2,344 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Vitalog</title>
 
-  <!-- Fuente: Open Sans -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Fuente -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- Tus CSS (ya en /assets/css/) -->
-  <link rel="stylesheet" href="assets/css/reset.css">
-  <link rel="stylesheet" href="assets/css/tokens.css">
-  <link rel="stylesheet" href="assets/css/app.css">
+  <!-- Tus CSS -->
+  <link rel="stylesheet" href="assets/css/variables.css">
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/components.css">
 
+  <!-- Ajustes mínimos para layout del topbar para evitar encimados -->
   <style>
-    /* ajustes mínimos por si el CSS aún no está listo */
-    :root { --bg:#ccecee; --c-text:#0f3850; --c-primary:#095d7e; --c-primary-2:#14967f; }
-    html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--c-text);font:16px/1.4 "Open Sans",system-ui,-apple-system,Segoe UI,Arial,sans-serif}
-    .shell{max-width:1100px;margin:0 auto;padding:16px}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .spacer{flex:1}
-    .btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:12px;border:none;padding:.8rem 1.1rem;background:#1f6ed4;color:#fff;font-weight:600;cursor:pointer}
-    .btn.secondary{background:#0b4a6a}
-    .btn.ghost{background:transparent;border:1px solid #0b4a6a;color:#0b4a6a}
-    .btn.danger{background:#ff5757}
-    header.top{display:flex;align-items:center;gap:12px}
-    header.top .brand{display:flex;align-items:center;gap:8px}
-    header.top img{height:28px}
-    header.top .menu{width:40px;height:40px;border-radius:10px;border:none;background:#e2f2f2 url('assets/icons/ui/menu.svg') center/22px 22px no-repeat;cursor:pointer}
-    table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}
-    th,td{padding:.9rem .9rem;border-bottom:1px solid #eaf2f4}
-    th{background:#e2f2f2;text-align:left;font-weight:700}
-    .t-center{text-align:center}.t-cap{text-transform:capitalize}
-    dialog{border:none;border-radius:16px;padding:0;max-width:560px;width:clamp(320px,90vw,560px)}
-    dialog .dlg-hd{padding:16px 18px;background:#e2f2f2;font-weight:700;border-radius:16px 16px 0 0}
-    dialog .dlg-bd{padding:16px 18px}
-    dialog .dlg-ft{padding:14px 18px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #eaf2f4}
-    .field{display:grid;gap:6px;margin:10px 0}
-    .field label{font-size:.9rem;opacity:.85}
-    .field input,.field select,.field textarea{padding:.6rem .75rem;border:1px solid #bcd8de;border-radius:10px;font:inherit}
-    .pillbar{display:flex;gap:10px}
-    /* ocultar vistas con [hidden] */
-    [hidden]{display:none !important}
-    /* menú de usuario */
-    #userMenu{position:absolute;right:16px;top:64px;background:#fff;border:1px solid #dbe9ee;border-radius:16px;min-width:320px;padding:8px}
-    #userMenu .item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;cursor:pointer}
-    #userMenu .item:hover{background:#f0fbfb}
-    #userMenu img{width:20px;height:20px}
+    .topbar{
+      display:flex; align-items:center; gap:16px;
+      padding:12px 16px; background:#ccecee;
+    }
+    .topbar .brand{display:flex; align-items:center; gap:10px}
+    .topbar .brand img{height:28px}
+    .topbar .brand .sep-logo{height:26px}
+    .topbar .user{
+      margin-left:auto; display:flex; align-items:center; gap:8px; font-weight:600;
+    }
+    .topbar .user img{height:24px}
+    .topbar .actions{
+      display:flex; align-items:center; gap:10px; margin-left:16px;
+    }
+    .btn{display:inline-flex; align-items:center; gap:8px; border:0; border-radius:12px; padding:10px 16px; font-weight:600; cursor:pointer}
+    .btn img{height:18px}
+    .btn-primary{ background:#1a76e5; color:#fff;}
+    .btn-primary:hover{filter:brightness(1.05)}
+    .btn-secondary{ background:#0b5a74; color:#fff;}
+    .btn-danger{ background:#ff5757; color:#fff;}
+    .btn-ghost{ background:#e2fcdb; color:#0b5a74;}
+    .icon-btn{
+      border:0; background:#fff; border-radius:12px; width:44px; height:44px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    }
+    .icon-btn img{height:22px}
+    .user-menu{
+      position:absolute; right:16px; top:72px;
+      background:#fff; border-radius:14px; padding:8px; width:320px; box-shadow:0 8px 28px rgba(0,0,0,.12);
+    }
+    .user-menu button{
+      width:100%; display:flex; align-items:center; gap:10px;
+      border:0; background:#eef7fb; padding:12px; border-radius:12px; margin:6px 0; cursor:pointer;
+      font-weight:600;
+    }
+    .user-menu button img{height:18px}
+    .page{
+      padding:14px 16px 28px;
+      background:#ccecee;
+      min-height:100dvh;
+    }
+    /* tabla */
+    .card{background:#daf0f4; border-radius:14px; padding:0}
+    table{width:100%; border-collapse:separate; border-spacing:0}
+    thead th{
+      text-align:left; padding:16px; color:#0b5a74; font-weight:700;
+      background:#d5eef1; position:sticky; top:0; z-index:1;
+    }
+    tbody td{padding:18px 16px; background:#fff; border-bottom:1px solid #e3edf0}
+    .t-center{text-align:center}
+    .t-cap{text-transform:capitalize}
+    /* diálogos (estilo básico) */
+    dialog{ border:0; border-radius:18px; padding:0; width:min(720px, 94vw); }
+    dialog::backdrop{ background:rgba(0,0,0,.3) }
+    .dlg{
+      padding:18px;
+    }
+    .dlg h3{ margin:0 0 12px; font-size:18px}
+    .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .form-grid .full{ grid-column:1 / -1 }
+    .field{ display:flex; flex-direction:column; gap:6px}
+    .field label{ font-size:13px; font-weight:600; color:#0b5a74 }
+    .field input, .field select, .field textarea{
+      border:1px solid #cfe0e5; background:#fff; border-radius:10px; padding:10px; font-size:14px
+    }
+    .dlg-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:14px}
   </style>
 </head>
 
 <body>
-  <!-- ========== VISTA: BIENVENIDA ========== -->
-  <section class="shell" data-view="welcome">
-    <header class="top">
+
+  <!-- =============== VIEW: WELCOME / landing ================= -->
+  <section data-view="welcome" class="page" hidden>
+    <header class="topbar">
       <div class="brand">
-        <img src="assets/brand/logoini.svg" alt="Vitalog texto">
-        <img src="assets/brand/logofin.svg" alt="Vitalog icono">
+        <img src="assets/brand/logoini.svg" alt="Vitalog" />
+        <img src="assets/brand/logofin.svg" class="sep-logo" alt="logo icon" />
       </div>
-      <div class="spacer"></div>
+      <div class="user">
+        <img src="assets/avatars/avatarh.svg" alt="avatar" />
+        <span>Invitado</span>
+      </div>
     </header>
 
-    <div style="height:56px"></div>
-
-    <div class="row" style="justify-content:center;gap:18px">
-      <button class="btn" data-action="go-login">
-        <img src="assets/icons/ui/usuario.svg" alt="" style="width:18px;height:18px">
+    <div style="padding:28px 6px">
+      <button class="btn btn-primary" data-action="go-login">
         Iniciar sesión
       </button>
-
-      <button class="btn secondary" data-action="go-register">
-        <img src="assets/icons/ui/nuevo.svg" alt="" style="width:18px;height:18px">
+      <button class="btn btn-secondary" data-action="go-register">
         Solicitar registro
       </button>
     </div>
   </section>
 
-  <!-- ========== VISTA: LOGIN ========== -->
-  <section class="shell" data-view="login" hidden>
-    <header class="top">
-      <button class="btn ghost" data-action="back-home">← Volver</button>
-      <div class="spacer"></div>
+  <!-- =============== VIEW: LOGIN ================= -->
+  <section data-view="login" class="page" hidden>
+    <header class="topbar">
       <div class="brand">
-        <img src="assets/brand/logoini.svg" alt="Vitalog texto">
-        <img src="assets/brand/logofin.svg" alt="Vitalog icono">
+        <img src="assets/brand/logoini.svg" alt="Vitalog" />
+        <img src="assets/brand/logofin.svg" class="sep-logo" alt="logo icon" />
       </div>
+      <button class="btn btn-ghost" data-action="back-home">⬅ Volver</button>
+      <div class="user" aria-hidden="true"></div>
     </header>
 
-    <div style="height:24px"></div>
-
-    <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:18px;border:1px solid #d5ecee">
+    <div style="padding:20px 6px; max-width:680px">
       <div class="field">
         <label>Correo electrónico</label>
-        <input id="loginEmail" type="email" placeholder="tucorreo@ejemplo.com" />
+        <input id="li-email" type="email" placeholder="tucorreo@ejemplo.com" />
       </div>
-      <div class="field">
+      <div class="field" style="margin-top:10px">
         <label>Contraseña</label>
-        <input id="loginPass" type="password" placeholder="••••••••" />
+        <input id="li-pass" type="password" placeholder="••••••••" />
       </div>
-      <div class="row" style="justify-content:center;margin-top:8px">
-        <button class="btn" data-action="login">
-          <img src="assets/icons/ui/usuario.svg" alt="" style="width:18px;height:18px">
-          Iniciar sesión
-        </button>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary" data-action="login">Iniciar sesión</button>
       </div>
-    </div>
-
-    <div class="row" style="justify-content:center;margin-top:16px">
-      <button class="btn ghost" data-action="go-register">
-        ¿No tienes cuenta? Solicitar registro
-      </button>
     </div>
   </section>
 
-  <!-- ========== VISTA: APP ========== -->
-  <section class="shell" data-view="app" hidden>
-    <header class="top" style="position:relative">
+  <!-- =============== VIEW: APP (principal) ================= -->
+  <section data-view="app" class="page">
+    <!-- TOPBAR -->
+    <header class="topbar">
       <div class="brand">
-        <img src="assets/brand/logoini.svg" alt="Vitalog texto">
-        <img src="assets/brand/logofin.svg" alt="Vitalog icono">
+        <img src="assets/brand/logoini.svg" alt="Vitalog" />
+        <img src="assets/brand/logofin.svg" class="sep-logo" alt="">
       </div>
 
-      <div class="spacer"></div>
+      <!-- Acciones principales -->
+      <div class="actions">
+        <button class="btn btn-primary" data-action="open-new">
+          <img src="assets/icons/ui/nuevo.svg" alt="" /> Nuevo
+        </button>
 
-      <div class="row" style="align-items:center;gap:10px">
-        <img id="topbarAvatar" src="assets/avatars/avatarh.svg" alt="avatar" style="width:28px;height:28px;border-radius:50%">
-        <strong id="topbarUser">usuario@correo.com</strong>
-        <button class="menu" aria-label="Menú" data-action="toggle-menu"></button>
+        <button class="btn btn-secondary" data-action="open-edit">
+          <img src="assets/icons/ui/editar.svg" alt="" /> Editar
+        </button>
+
+        <button class="btn btn-danger" data-action="open-delete">
+          <img src="assets/icons/ui/borrar.svg" alt="" /> Borrar
+        </button>
+
+        <button class="btn btn-primary" data-action="toggle-sort" title="Ordenar">
+          <img src="assets/icons/ui/filtro.svg" alt="" style="transform:rotate(90deg)" />
+          Ordenar
+        </button>
+
+        <button class="btn btn-primary" data-action="open-filters" title="Filtros">
+          <img src="assets/icons/ui/filtro.svg" alt="" />
+          Filtros
+        </button>
       </div>
 
-      <!-- Menú de usuario -->
-      <div id="userMenu" hidden>
-        <div class="item" data-action="open-profile">
-          <img src="assets/icons/ui/usuario.svg" alt=""> Actualizar datos personales
-        </div>
-        <div class="item" data-action="change-password">
-          <img src="assets/icons/ui/password.svg" alt=""> Cambiar contraseña
-        </div>
-        <div class="item" data-action="export-data">
-          <img src="assets/icons/ui/exportar.svg" alt=""> Exportar datos (csv &gt; email)
-        </div>
-        <div class="item" data-action="backup-device">
-          <img src="assets/icons/ui/respaldo.svg" alt=""> Respaldar en este dispositivo
-        </div>
-        <div class="item" data-action="logout">
-          <img src="assets/icons/ui/logout.svg" alt=""> Cerrar sesión
-        </div>
+      <!-- Usuario + menú -->
+      <div class="user">
+        <img src="assets/avatars/avatarh.svg" alt="avatar" />
+        <span id="topbarUser">julianluzanilla@hotmail.com</span>
       </div>
+      <button class="icon-btn" id="btnMenu" data-action="toggle-menu" aria-label="Menú">
+        <img src="assets/icons/ui/menu.svg" alt="">
+      </button>
     </header>
 
-    <div style="height:12px"></div>
-
-    <!-- Barra de acciones -->
-    <div class="row" style="margin:10px 0 14px 0">
-      <div class="spacer"></div>
-      <button class="btn" data-action="open-new">
-        <img src="assets/icons/ui/nuevo.svg" alt="" style="width:18px;height:18px">
-        Nuevo
+    <!-- MENÚ DE USUARIO -->
+    <div id="userMenu" class="user-menu" hidden>
+      <button data-action="open-profile">
+        <img src="assets/icons/ui/usuario.svg" alt=""> Actualizar datos personales
       </button>
-      <button class="btn secondary" data-action="open-edit">
-        <img src="assets/icons/ui/editar.svg" alt="" style="width:18px;height:18px">
-        Editar
+      <button data-action="change-password">
+        <img src="assets/icons/ui/password.svg" alt=""> Cambiar contraseña
       </button>
-      <button class="btn danger" data-action="open-delete">
-        <img src="assets/icons/ui/borrar.svg" alt="" style="width:18px;height:18px">
-        Borrar
+      <button data-action="export-data">
+        <img src="assets/icons/ui/exportar.svg" alt=""> Exportar datos (csv > email)
+      </button>
+      <button data-action="backup-device">
+        <img src="assets/icons/ui/respaldo.svg" alt=""> Respaldar en este dispositivo
+      </button>
+      <button data-action="logout" style="background:#ffe7e7">
+        <img src="assets/icons/ui/logout.svg" alt=""> Cerrar sesión
       </button>
     </div>
 
-    <!-- Tabla de logs -->
-    <div style="overflow:auto;border-radius:14px;border:1px solid #d5ecee">
+    <!-- TABLA -->
+    <div class="card" style="margin-top:10px">
       <table>
         <thead>
           <tr>
-            <th style="width:240px">Hora</th>
-            <th style="width:160px">Tipo</th>
+            <th>Hora</th>
+            <th>Tipo</th>
             <th>Valores y comentarios</th>
-            <th style="width:80px" class="t-center">Sel.</th>
+            <th class="t-center">Sel.</th>
           </tr>
         </thead>
-        <tbody id="logTableBody"><!-- renderizado por app.js --></tbody>
+        <tbody id="logTableBody">
+          <!-- filas generadas por app.js -->
+        </tbody>
       </table>
     </div>
   </section>
 
-  <!-- ========== DLG: NUEVO REGISTRO ========== -->
+  <!-- =============== DIALOG: NUEVO REGISTRO ================= -->
   <dialog id="dlgNew">
-    <div class="dlg-hd">Nuevo registro</div>
-    <div class="dlg-bd">
-      <div class="row">
-        <div class="field" style="flex:1 1 160px">
+    <div class="dlg">
+      <h3>Nuevo registro</h3>
+
+      <div class="form-grid">
+        <div class="field">
           <label>Fecha</label>
-          <input type="date" id="newDate">
+          <input id="newDate" type="date">
         </div>
-        <div class="field" style="flex:1 1 140px">
+        <div class="field">
           <label>Hora</label>
-          <input type="time" id="newTime">
+          <input id="newTime" type="time">
+        </div>
+
+        <div class="field full">
+          <label>Tipo de registro</label>
+          <select id="newType">
+            <option value="presion_arterial">Presión arterial</option>
+            <option value="ritmo_cardiaco">Ritmo cardiaco</option>
+            <option value="peso">Peso</option>
+            <option value="bano">Baño (pipí)</option>
+            <option value="dolor">Dolor</option>
+            <option value="mareo">Mareo</option>
+            <option value="medicamento">Toma de medicamento</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label>Valores / comentarios</label>
+          <textarea id="newNotes" rows="4" placeholder="Ej. 120/80 LPM 63 · En casa después de bañarme"></textarea>
         </div>
       </div>
 
-      <div class="field">
-        <label>Tipo de registro</label>
-        <select id="newType">
-          <option value="dolor">Dolor</option>
-          <option value="mareo">Mareo</option>
-          <option value="lpm">LPM</option>
-          <option value="sangre">Presión arterial</option>
-          <option value="medicamento">Toma de medicamento</option>
-          <option value="baño">Baño</option>
-          <option value="peso">Peso</option>
-        </select>
+      <div class="dlg-actions">
+        <button class="btn" onclick="document.querySelector('#dlgNew').close()">Cancelar</button>
+        <button class="btn btn-primary" data-action="save-new">Guardar</button>
       </div>
-
-      <div class="field">
-        <label>Observaciones / valores</label>
-        <textarea id="newNotes" rows="4" placeholder="Ej. 120/80 LPM 63 · En casa después de bañarme"></textarea>
-      </div>
-    </div>
-    <div class="dlg-ft">
-      <button class="btn ghost" onclick="document.querySelector('#dlgNew').close()">Cancelar</button>
-      <button class="btn" data-action="save-new">Guardar</button>
     </div>
   </dialog>
 
-  <!-- ========== DLG: PERFIL ========== -->
+  <!-- =============== DIALOG: PERFIL ================= -->
   <dialog id="dlgProfile">
-    <div class="dlg-hd">Actualizar datos personales</div>
-    <div class="dlg-bd">
-      <div class="field">
-        <label>Nombre(s)</label>
-        <input id="pfName" type="text" placeholder="Nombre(s)">
-      </div>
-      <div class="field">
-        <label>Apellido(s)</label>
-        <input id="pfLast" type="text" placeholder="Apellido(s)">
-      </div>
+    <div class="dlg">
+      <h3>Actualizar datos personales</h3>
 
-      <div class="row">
-        <div class="field" style="flex:1 1 180px">
+      <div class="form-grid">
+        <div class="field">
+          <label>Nombre(s)</label>
+          <input id="pf-first" type="text" placeholder="José">
+        </div>
+        <div class="field">
+          <label>Apellidos</label>
+          <input id="pf-last" type="text" placeholder="Pérez">
+        </div>
+
+        <div class="field">
           <label>Fecha de nacimiento</label>
-          <input id="pfBirth" type="date">
+          <input id="pf-birth" type="date">
         </div>
-        <div class="field" style="flex:1 1 120px">
+        <div class="field">
           <label>Peso (kg)</label>
-          <input id="pfWeight" type="number" step="0.1" min="0" placeholder="80">
+          <input id="pf-weight" type="number" step="0.1" placeholder="90">
         </div>
-        <div class="field" style="flex:1 1 120px">
+
+        <div class="field">
           <label>Estatura (m)</label>
-          <input id="pfHeight" type="number" step="0.01" min="0" placeholder="1.75">
+          <input id="pf-height" type="number" step="0.01" placeholder="1.80">
+        </div>
+
+        <div class="field">
+          <label>Nivel de actividad</label>
+          <select id="pf-activity">
+            <option value="sedentario">Sedentario</option>
+            <option value="leve">Leve</option>
+            <option value="moderado">Moderado</option>
+            <option value="en_forma">En forma</option>
+            <option value="atleta">Atleta</option>
+          </select>
         </div>
       </div>
 
-      <div class="field">
-        <label>Nivel de actividad física</label>
-        <div class="pillbar">
-          <button type="button" class="btn ghost">Sedentario</button>
-          <button type="button" class="btn ghost">Leve</button>
-          <button type="button" class="btn ghost">Moderado</button>
-          <button type="button" class="btn ghost">En forma</button>
-          <button type="button" class="btn ghost">Atleta</button>
-        </div>
+      <div class="dlg-actions">
+        <button class="btn" onclick="document.querySelector('#dlgProfile').close()">Cancelar</button>
+        <button class="btn btn-primary" data-action="save-profile">Guardar</button>
       </div>
-    </div>
-    <div class="dlg-ft">
-      <button class="btn ghost" onclick="document.querySelector('#dlgProfile').close()">Cancelar</button>
-      <button class="btn" data-action="save-profile">Guardar</button>
     </div>
   </dialog>
 
-  <!-- JS (mock) -->
+  <!-- =============== DIALOG: FILTROS (placeholder) ================= -->
+  <dialog id="dlgFilters">
+    <div class="dlg">
+      <h3>Filtros</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Desde</label>
+          <input type="date" id="fltFrom">
+        </div>
+        <div class="field">
+          <label>Hasta</label>
+          <input type="date" id="fltTo">
+        </div>
+        <div class="field full">
+          <label>Tipo</label>
+          <select id="fltType">
+            <option value="">Todos</option>
+            <option value="presion_arterial">Presión arterial</option>
+            <option value="ritmo_cardiaco">Ritmo cardiaco</option>
+            <option value="peso">Peso</option>
+            <option value="bano">Baño</option>
+            <option value="dolor">Dolor</option>
+            <option value="mareo">Mareo</option>
+            <option value="medicamento">Medicamento</option>
+          </select>
+        </div>
+      </div>
+      <div class="dlg-actions">
+        <button class="btn" onclick="document.querySelector('#dlgFilters').close()">Cerrar</button>
+        <button class="btn btn-primary">Aplicar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Assets & App -->
   <script src="assets/manifest.js" defer></script>
   <script src="assets/app.js" defer></script>
 </body>
