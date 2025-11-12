@@ -1,0 +1,300 @@
+/* ---- app.css -------------------------------------------------------------
+   Estilos de la aplicación (usa variables de tokens.css).
+--------------------------------------------------------------------------- */
+
+/* Base */
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text-900);
+  font-family: var(--font-sans);
+  font-size: 16px;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding: var(--space-12);
+}
+
+/* Topbar */
+.topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+  padding-inline: var(--space-12);
+  background: transparent; /* dejamos ver el fondo */
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.topbar__brand img {
+  height: 32px;
+  width: auto;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.topbar__user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 6px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-1);
+}
+
+.topbar__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.icon-btn img {
+  width: 22px;
+  height: 22px;
+}
+
+/* Vistas */
+.view {
+  display: block;
+}
+
+.view[hidden] {
+  display: none !important;
+}
+
+/* Tarjetas genéricas */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-16);
+  box-shadow: var(--shadow-1);
+}
+
+/* Grid básico responsive (bien útil en dashboard) */
+.grid {
+  display: grid;
+  gap: var(--space-12);
+}
+
+@media (min-width: 768px) {
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Formularios */
+.form-row {
+  display: grid;
+  gap: var(--space-6);
+  margin-block: var(--space-8);
+}
+
+label {
+  font-size: .9rem;
+  color: var(--color-text-700);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #fff;
+  color: var(--color-text-900);
+  box-shadow: var(--shadow-1);
+}
+
+textarea { resize: vertical; min-height: 96px; }
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border: 0;
+  border-radius: 9999px;
+  padding: 10px 18px;
+  font-weight: 600;
+  transition: transform .04s ease, filter .12s ease;
+  user-select: none;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn--primary {
+  background: var(--color-primary-700);
+  color: var(--color-text-inv);
+}
+
+.btn--secondary {
+  background: var(--color-primary-500);
+  color: var(--color-text-inv);
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-900);
+}
+
+.btn--danger {
+  background: var(--color-danger);
+  color: var(--color-text-inv);
+}
+
+/* Sección de bienvenida / login */
+.welcome__hero {
+  display: grid;
+  place-items: center;
+  padding-block: var(--space-24);
+}
+
+.hero__actions {
+  display: grid;
+  gap: var(--space-8);
+  justify-items: center;
+}
+
+.hero__actions .btn {
+  min-width: 220px;
+}
+
+/* Tabla principal (sin filas alternadas) */
+.table-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-1);
+}
+
+table.data {
+  width: 100%;
+  font-size: .95rem;
+}
+
+table.data thead th {
+  background: var(--color-primary-700);
+  color: var(--color-text-inv);
+  text-align: left;
+  padding: 12px;
+  font-weight: 700;
+}
+
+table.data tbody td {
+  border-top: 1px solid var(--color-border);
+  padding: 12px;
+  vertical-align: top;
+}
+
+.t-center { text-align: center; }
+.t-right  { text-align: right; }
+.t-cap    { text-transform: capitalize; }
+
+/* Menú de usuario (dropdown) */
+.menu {
+  position: absolute;
+  top: calc(var(--topbar-h) + 6px);
+  right: var(--space-12);
+  width: 320px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+  padding: var(--space-8);
+}
+
+.menu[hidden] { display: none; }
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-900);
+}
+
+.menu__item:hover {
+  background: #e8f4f7;
+}
+
+/* Diálogos (dialog element) */
+dialog {
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  max-width: 680px;
+  width: min(92vw, 680px);
+  box-shadow: var(--shadow-2);
+}
+
+dialog::backdrop {
+  background: rgba(8, 25, 32, .35);
+}
+
+.dialog__header {
+  padding: var(--space-12) var(--space-16);
+  background: var(--color-primary-700);
+  color: var(--color-text-inv);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+}
+
+.dialog__body {
+  padding: var(--space-16);
+  background: var(--color-surface);
+}
+
+.dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+}
+
+/* Utilidades */
+.m-0   { margin: 0 !important; }
+.mt-8  { margin-top: var(--space-8); }
+.mt-16 { margin-top: var(--space-16); }
+.mb-8  { margin-bottom: var(--space-8); }
+.mb-16 { margin-bottom: var(--space-16); }
+.gap-8 { gap: var(--space-8); }
+.gap-12{ gap: var(--space-12); }
+
+.hide { display: none !important; }
