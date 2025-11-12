@@ -1,491 +1,240 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <title>Health Log</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root{
-      --bg:#0b1220; --bg-2:#0f1728; --panel:#121a2b; --muted:#9fb0d1;
-      --line:#1e2a44; --accent:#2280ff; --text:#eaeef8; --ok:#16a34a; --err:#ef4444;
-    }
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    a{color:var(--text)}
-    .container{max-width:1100px;margin:0 auto;padding:16px}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:14px}
-    .row{display:flex;gap:16px}
-    .col{flex:1}
-    .muted{color:var(--muted)}
-    .btn{border:1px solid var(--line);background:var(--bg-2);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer}
-    .btn:hover{border-color:#2a3b63}
-    .btn.primary{background:var(--accent);border-color:var(--accent)}
-    .btn.danger{background:#e33;border-color:#e33}
-    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #2a3b63;background:var(--bg-2);color:var(--text)}
-    textarea{min-height:80px;resize:vertical}
-    .toolbar{display:flex;align-items:center;justify-content:space-between;margin:8px 0 16px}
-    .title{font-size:20px;font-weight:700}
-    /* Header */
-    .appbar{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
-    .user-chip{display:flex;align-items:center;gap:10px;position:relative}
-    .avatar{width:34px;height:34px;border-radius:50%;display:inline-grid;place-content:center;background:#24314d;border:1px solid #2a3b63;font-weight:700}
-    .user-menu{position:absolute;right:0;top:42px;background:var(--panel);border:1px solid var(--line);border-radius:10px;min-width:210px;display:none;z-index:10}
-    .user-menu.open{display:block}
-    .user-menu .item{padding:10px 12px;cursor:pointer}
-    .user-menu .item:hover{background:var(--bg-2)}
-    /* Listado */
-    .list{display:flex;flex-direction:column;gap:8px}
-    .log-item{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:10px}
-    .chip{font-size:11px;padding:2px 8px;border-radius:999px;background:#24314d;border:1px solid #2a3b63;margin-left:6px}
-    .sep{height:1px;background:var(--line);margin:12px 0}
-    /* Modal */
-    .modal{position:fixed;inset:0;display:none;place-items:center;background:#0008;z-index:30}
-    .modal.open{display:grid}
-    .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:min(680px,92vw);max-height:90vh;overflow:auto;padding:16px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .right{display:flex;justify-content:flex-end;gap:8px}
-    /* Responsive */
-    @media (max-width: 840px){
-      .row{flex-direction:column}
-      .grid,.grid-3{grid-template-columns:1fr}
-    }
-    /* Ocultar barra de estado global salvo errores */
-    #status.err{display:block}
-    #status{display:none;text-align:center;padding:8px 0}
-  </style>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Vitalog</title>
+
+  <!-- Paleta y tipografía -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus 3 CSS (ajusta nombres si difieren) -->
+  <link rel="stylesheet" href="/assets/css/tokens.css">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+
+  <!-- Manifest / (si ya lo tienes) -->
+  <link rel="manifest" href="/assets/manifest.json">
+  <meta name="theme-color" content="#ccecee" />
 </head>
-<body>
-  <div class="container">
-    <!-- APP BAR -->
-    <div class="appbar">
-      <div class="title">Health Log</div>
-      <div class="user-chip hidden" id="user-chip">
-        <span id="user-name" class="muted"></span>
-        <div id="user-avatar" class="avatar">U</div>
-        <div class="user-menu" id="user-menu">
-          <div class="item" id="menu-edit">Editar perfil</div>
-          <div class="item" id="menu-logout">Cerrar sesión</div>
-        </div>
-      </div>
+<body style="background:#ccecee">
+
+  <!-- App Shell -->
+  <header class="app-header">
+    <div class="brand">
+      <!-- logo “texto” + “imagen” (puedes cambiar orden si lo prefieres) -->
+      <img src="/assets/brand/logoini.svg" alt="Vitalog" class="logo-text" />
+      <img src="/assets/brand/logofin.svg" alt="" class="logo-mark" />
     </div>
 
-    <div id="status" class="err"></div>
+    <nav class="actions">
+      <!-- usuario + avatar -->
+      <button class="userchip" data-action="open-profile" aria-label="Abrir perfil">
+        <img src="/assets/avatars/avatarh.svg" alt="" class="avatar" />
+        <span class="userchip__label" id="topbarUser">julianluzanilla@hotmail.com</span>
+      </button>
 
-    <!-- ====== LOGIN (pantalla) ====== -->
-    <div id="view-login" class="card" style="padding:16px;">
-      <div class="title" style="margin-bottom:10px;">Inicia sesión</div>
-      <div class="row">
-        <div class="col">
-          <label class="muted">Correo</label>
-          <input type="email" id="li-email" placeholder="tucorreo@ejemplo.com">
-        </div>
-        <div class="col">
-          <label class="muted">Contraseña</label>
-          <input type="password" id="li-pass" placeholder="••••••••">
-        </div>
-      </div>
-      <div class="right" style="margin-top:10px;">
-        <button class="btn" id="go-signup">Crear cuenta</button>
-        <button class="btn primary" id="btn-login">Entrar</button>
-      </div>
-    </div>
+      <!-- menú hamburguesa (acciones del usuario) -->
+      <button class="icon-btn" data-action="toggle-menu" aria-label="Abrir menú">
+        <img src="/assets/icons/ui/menu.svg" alt="" />
+      </button>
 
-    <!-- ====== SIGNUP (pantalla) ====== -->
-    <div id="view-signup" class="card hidden" style="padding:16px;">
-      <div class="title" style="margin-bottom:10px;">Crear cuenta</div>
-      <div class="grid">
-        <div><label class="muted">Correo</label><input type="email" id="su-email"></div>
-        <div><label class="muted">Contraseña</label><input type="password" id="su-pass"></div>
-        <div><label class="muted">Nombre(s)</label><input type="text" id="su-first"></div>
-        <div><label class="muted">Apellido(s)</label><input type="text" id="su-last"></div>
-        <div><label class="muted">Fecha de nacimiento</label><input type="date" id="su-birth"></div>
-        <div>
-          <label class="muted">Género</label>
-          <select id="su-gender"><option value="H">Hombre</option><option value="M">Mujer</option></select>
-        </div>
-        <div>
-          <label class="muted">Nivel de actividad</label>
-          <select id="su-activity">
-            <option value="sedentario">Sedentario</option><option value="leve">Leve</option>
-            <option value="moderado">Moderado</option><option value="en_forma">En forma</option>
-            <option value="atleta">Atleta</option>
-          </select>
-        </div>
-        <div>
-          <label class="muted">Avatar (id)</label>
-          <select id="su-avatar">
-            <option>avatar1</option><option>avatar2</option><option>avatar3</option><option>avatar4</option><option>avatar5</option>
-            <option>avatar6</option><option>avatar7</option><option>avatar8</option><option>avatar9</option><option>avatar10</option>
-          </select>
-        </div>
+      <div class="dropdown" id="userMenu" hidden>
+        <button class="dd-item" data-action="open-profile">
+          <img src="/assets/icons/ui/usuario.svg" alt="" /> Actualizar datos personales
+        </button>
+        <button class="dd-item" data-action="change-password">
+          <img src="/assets/icons/ui/password.svg" alt="" /> Cambiar contraseña
+        </button>
+        <button class="dd-item" data-action="export-data">
+          <img src="/assets/icons/ui/exportar.svg" alt="" /> Exportar datos (csv > email)
+        </button>
+        <button class="dd-item" data-action="backup-device">
+          <img src="/assets/icons/ui/respaldo.svg" alt="" /> Respaldar en este dispositivo
+        </button>
+        <hr />
+        <button class="dd-item dd-danger" data-action="logout">
+          <img src="/assets/icons/ui/logout.svg" alt="" /> Cerrar sesión
+        </button>
       </div>
-      <div class="right" style="margin-top:10px;">
-        <button class="btn" id="back-login">Volver</button>
-        <button class="btn primary" id="btn-signup">Registrarme</button>
-      </div>
-    </div>
+    </nav>
+  </header>
 
-    <!-- ====== CONFIRM (pantalla) ====== -->
-    <div id="view-confirm" class="card hidden" style="padding:16px;">
-      <div class="title" style="margin-bottom:10px;">Confirmar correo</div>
-      <div class="row">
-        <div class="col"><label class="muted">Correo</label><input type="email" id="cf-email"></div>
-        <div class="col"><label class="muted">Código</label><input type="text" id="cf-code"></div>
-      </div>
-      <div class="right" style="margin-top:10px;">
-        <button class="btn" id="btn-resend">Reenviar código</button>
-        <button class="btn primary" id="btn-confirm">Confirmar</button>
-      </div>
-    </div>
+  <main id="views">
 
-    <!-- ====== HOME (EN SESIÓN) ====== -->
-    <div id="view-home" class="hidden">
+    <!-- VIEW: Welcome -->
+    <section class="view is-center" data-view="welcome">
+      <div class="stack gap-24">
+        <button class="btn btn-lg btn-primary" data-action="go-login">
+          Iniciar sesión
+        </button>
+        <button class="btn btn-lg btn-secondary" data-action="go-register">
+          Solicitar registro
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW: Login -->
+    <section class="view" data-view="login" hidden>
+      <div class="auth-card">
+        <h1 class="h2">Iniciar sesión</h1>
+
+        <label class="field">
+          <span>Correo electrónico</span>
+          <input type="email" id="liEmail" autocomplete="email" />
+        </label>
+
+        <label class="field">
+          <span>Contraseña</span>
+          <input type="password" id="liPass" autocomplete="current-password" />
+        </label>
+
+        <div class="row mt-16">
+          <button class="btn btn-primary" data-action="login">Iniciar sesión</button>
+          <button class="btn" data-action="back-home">Volver</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: App (lista + acciones) -->
+    <section class="view" data-view="app" hidden>
       <div class="toolbar">
-        <div class="title">Mis registros</div>
-        <div class="row" style="gap:8px;align-items:center">
-          <select id="filter-type" class="btn" style="padding:8px 10px;">
-            <option value="Todos">Todos</option>
-            <option value="dolor">Dolor</option>
-            <option value="mareo">Mareo</option>
-            <option value="lpm">Toma de LPM</option>
-            <option value="presion">Presión arterial</option>
-            <option value="medicamento">Medicamento</option>
-            <option value="bano">Baño</option>
-          </select>
-          <button class="btn" id="btn-refresh">Refrescar</button>
-          <button class="btn primary" id="btn-new">+ Nuevo registro</button>
+        <div class="filters">
+          <button class="chip" data-action="filter-all">
+            <img src="/assets/icons/ui/filtro.svg" aria-hidden="true" /> Todos
+          </button>
+          <!-- puedes agregar más chips de tipo -->
         </div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" data-action="open-new">
+          <img src="/assets/icons/ui/nuevo.svg" alt="" /> Nuevo
+        </button>
+        <button class="btn" data-action="open-edit">
+          <img src="/assets/icons/ui/editar.svg" alt="" /> Editar
+        </button>
+        <button class="btn btn-danger" data-action="open-delete">
+          <img src="/assets/icons/ui/borrar.svg" alt="" /> Borrar
+        </button>
       </div>
 
-      <div class="card" style="padding:16px;">
-        <div id="list" class="list"></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Tipo</th>
+              <th>Valores y comentarios</th>
+              <th class="t-center">Sel.</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody">
+            <!-- filas generadas por JS (sin alternar filas, como acordamos) -->
+          </tbody>
+        </table>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- MODAL NUEVO REGISTRO -->
-  <div class="modal" id="modal">
-    <div class="modal-card">
-      <div class="title" style="margin-bottom:10px;">Nuevo registro</div>
-      <div class="grid">
-        <div>
-          <label class="muted">Fecha</label>
-          <input type="date" id="f-date">
-        </div>
-        <div>
-          <label class="muted">Hora</label>
-          <input type="time" id="f-time">
-        </div>
-      </div>
-      <div class="grid" style="margin-top:8px;">
-        <div>
-          <label class="muted">Tipo</label>
-          <select id="f-type">
+  </main>
+
+  <!-- MODAL: Nuevo registro -->
+  <dialog id="dlgNew" class="modal">
+    <form method="dialog" class="modal__card" id="formNew">
+      <header class="modal__hd">
+        <h2 class="h3">Nuevo registro</h2>
+      </header>
+      <section class="modal__bd grid gap-12">
+        <label class="field">
+          <span>Fecha</span>
+          <input type="date" id="newDate" />
+        </label>
+        <label class="field">
+          <span>Hora</span>
+          <input type="time" id="newTime" />
+        </label>
+
+        <label class="field">
+          <span>Tipo</span>
+          <select id="newType">
             <option value="dolor">Dolor</option>
             <option value="mareo">Mareo</option>
-            <option value="lpm">Toma de LPM</option>
-            <option value="presion">Presión arterial</option>
+            <option value="lpm">LPM</option>
+            <option value="sangre">Presión arterial</option>
             <option value="medicamento">Toma de medicamento</option>
-            <option value="bano">Visita al baño</option>
+            <option value="baño">Baño</option>
+            <option value="peso">Peso</option>
           </select>
+        </label>
+
+        <label class="field">
+          <span>Detalle / valores</span>
+          <textarea id="newNotes" rows="3" placeholder="p. ej. 135/86 LPM 75 · En casa, después de..."></textarea>
+        </label>
+      </section>
+      <footer class="modal__ft">
+        <button class="btn" value="cancel">Cancelar</button>
+        <button class="btn btn-primary" value="confirm" data-action="save-new">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- MODAL: Perfil -->
+  <dialog id="dlgProfile" class="modal">
+    <form method="dialog" class="modal__card" id="formProfile">
+      <header class="modal__hd">
+        <h2 class="h3">Actualizar datos personales</h2>
+      </header>
+      <section class="modal__bd grid gap-12">
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" id="pfName">
+        </label>
+        <label class="field">
+          <span>Apellidos</span>
+          <input type="text" id="pfLast">
+        </label>
+
+        <div class="grid grid-2 gap-12">
+          <label class="field">
+            <span>Fecha de nacimiento</span>
+            <input type="date" id="pfBirth">
+          </label>
+          <label class="field">
+            <span>Edad</span>
+            <input type="number" id="pfAge" min="0" step="1">
+          </label>
         </div>
-        <div id="g-dolor" class="hidden">
-          <label class="muted">Zona (dolor)</label>
-          <select id="f-dolor-zone">
-            <option value="cabeza">Cabeza</option><option value="espalda">Espalda</option>
-            <option value="ciatica">Ciática</option><option value="cuello">Cuello</option><option value="ojos">Ojos</option>
-          </select>
+
+        <div class="grid grid-2 gap-12">
+          <label class="field">
+            <span>Peso (kg)</span>
+            <input type="number" id="pfWeight" min="0" step="0.1">
+          </label>
+          <label class="field">
+            <span>Estatura (m)</span>
+            <input type="number" id="pfHeight" min="0" step="0.01">
+          </label>
         </div>
-        <div id="g-duracion" class="hidden">
-          <label class="muted">Duración (minutos, 0 = constante)</label>
-          <input type="number" id="f-duration" min="0" step="1" value="0">
-        </div>
-        <div id="g-intensidad" class="hidden">
-          <label class="muted">Intensidad (1 a 10)</label>
-          <input type="number" id="f-intensity" min="1" max="10" step="1" value="5">
-        </div>
-        <div id="g-lpm" class="hidden">
-          <label class="muted">LPM (resultado)</label>
-          <input type="number" id="f-lpm" min="1" step="1">
-        </div>
-        <div id="g-presion" class="hidden">
-          <label class="muted">Presión (sistólica / diastólica / lpm opcional)</label>
-          <div class="grid-3">
-            <input type="number" id="f-sis" placeholder="Sistólica" min="1">
-            <input type="number" id="f-dia" placeholder="Diastólica" min="1">
-            <input type="number" id="f-pulse" placeholder="LPM (opcional)" min="1">
-          </div>
-        </div>
-        <div id="g-medic" class="hidden">
-          <label class="muted">Medicamento / dosis</label>
-          <div class="grid">
-            <input id="f-med-name" placeholder="Nombre (pregrabados en futuro)">
-            <input id="f-med-dose" placeholder="Dosis">
-          </div>
-        </div>
-        <div id="g-bano" class="hidden">
-          <label class="muted">Tipo</label>
-          <select id="f-bano-type"><option value="pipi">Pipí</option><option value="popo">Popó</option></select>
-        </div>
-        <div id="g-bano-cant" class="hidden">
-          <label class="muted">Cantidad</label>
-          <select id="f-bano-cant">
-            <option value="muy_poco">Muy poco</option><option value="poco">Poco</option>
-            <option value="regular">Regular</option><option value="mucho">Mucho</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="sep"></div>
-      <label class="muted">Observaciones</label>
-      <textarea id="f-notes" placeholder="Opcional: contexto, condiciones, etc."></textarea>
+        <fieldset class="segmented">
+          <legend>Nivel de actividad física</legend>
+          <label><input type="radio" name="pfAct" value="sedentario" checked> Sedentario</label>
+          <label><input type="radio" name="pfAct" value="leve"> Leve</label>
+          <label><input type="radio" name="pfAct" value="moderado"> Moderado</label>
+          <label><input type="radio" name="pfAct" value="en_forma"> En forma</label>
+          <label><input type="radio" name="pfAct" value="atleta"> Atleta</label>
+        </fieldset>
+      </section>
+      <footer class="modal__ft">
+        <button class="btn" value="cancel">Cancelar</button>
+        <button class="btn btn-primary" value="confirm" data-action="save-profile">Guardar</button>
+      </footer>
+    </form>
+  </dialog>
 
-      <div class="right" style="margin-top:12px;">
-        <button class="btn" id="btn-cancel">Cancelar</button>
-        <button class="btn primary" id="btn-save">Guardar registro</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SDK Cognito -->
-  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.7/dist/amazon-cognito-identity.min.js"></script>
-  <script>
-    // ========= CONFIG =========
-    const COGNITO_CONFIG = {
-      region: 'us-east-2',
-      userPoolId: 'us-east-2_vqmICro9s',
-      clientId: '3urf9cvd0hrcn0ok5prog4fm2v'
-    };
-    const API_URL = "https://qrmjqw5uon6c4ydfocz2v2m3cm0rkggr.lambda-url.us-east-2.on.aws/";
-
-    // ========= Helpers UI =========
-    const $ = (s)=>document.querySelector(s);
-    const show = (s)=>$(s).classList.remove('hidden');
-    const hide = (s)=>$(s).classList.add('hidden');
-
-    const setError = (msg)=>{ const el=$('#status'); el.textContent=msg||''; el.className=msg?'err':'err'; el.style.display = msg? 'block':'none'; };
-
-    // ========= Cognito =========
-    const pool = new AmazonCognitoIdentity.CognitoUserPool({UserPoolId: COGNITO_CONFIG.userPoolId, ClientId: COGNITO_CONFIG.clientId});
-
-    function uiTo(section){
-      hide('#view-login'); hide('#view-signup'); hide('#view-confirm'); hide('#view-home');
-      if(section) show(section);
-      $('#user-chip').classList.toggle('hidden', section!=='#view-home');
-    }
-
-    // Login
-    $('#btn-login').addEventListener('click', ()=>{
-      const email=$('#li-email').value.trim(), pass=$('#li-pass').value.trim();
-      if(!email||!pass){ setError('Ingresa correo y contraseña.'); return; }
-      const user=new AmazonCognitoIdentity.CognitoUser({Username:email, Pool:pool});
-      const auth=new AmazonCognitoIdentity.AuthenticationDetails({Username:email, Password:pass});
-      user.authenticateUser(auth,{
-        onSuccess:(res)=>{
-          const idToken=res.getIdToken().getJwtToken();
-          localStorage.setItem('hl_id_token', idToken);
-          localStorage.setItem('hl_access_token', res.getAccessToken().getJwtToken());
-          localStorage.setItem('hl_refresh_token', res.getRefreshToken().getToken());
-          user.getUserAttributes((err,attrs)=>{
-            if(err){ setError(err.message||String(err)); return; }
-            const obj={}; attrs.forEach(a=>obj[a.getName()]=a.getValue());
-            localStorage.setItem('hl_user_sub', obj.sub||'');
-            localStorage.setItem('hl_user_first', obj['custom:firstName']||'');
-            localStorage.setItem('hl_user_last', obj['custom:lastName']||'');
-            localStorage.setItem('hl_user_avatar', obj['custom:avatarId']||'avatar1');
-            paintUserChip();
-            uiTo('#view-home');
-            refreshLogs(); // carga inicial
-          });
-        },
-        onFailure:(e)=>setError(e.message||String(e))
-      });
-    });
-
-    // Signup
-    $('#go-signup').addEventListener('click', ()=>uiTo('#view-signup'));
-    $('#back-login').addEventListener('click', ()=>uiTo('#view-login'));
-
-    $('#btn-signup').addEventListener('click', ()=>{
-      const email=$('#su-email').value.trim(), pass=$('#su-pass').value.trim();
-      const first=$('#su-first').value.trim(), last=$('#su-last').value.trim();
-      const birth=$('#su-birth').value, gender=$('#su-gender').value, act=$('#su-activity').value, avatar=$('#su-avatar').value;
-      if(!email||!pass||!first||!last||!birth){ setError('Faltan campos obligatorios.'); return; }
-      const attrs=[
-        ['email',email], ['custom:firstName',first], ['custom:lastName',last],
-        ['custom:birthdate',birth], ['custom:gender',gender], ['custom:activityLevel',act], ['custom:avatarId',avatar]
-      ].map(([Name,Value])=>new AmazonCognitoIdentity.CognitoUserAttribute({Name,Value}));
-
-      pool.signUp(email, pass, attrs, null, (err)=>{
-        if(err){ setError(err.message||String(err)); return; }
-        $('#cf-email').value = email;
-        uiTo('#view-confirm');
-      });
-    });
-
-    // Confirm
-    $('#btn-confirm').addEventListener('click', ()=>{
-      const email=$('#cf-email').value.trim(), code=$('#cf-code').value.trim();
-      if(!email||!code){ setError('Ingresa correo y código.'); return; }
-      const user=new AmazonCognitoIdentity.CognitoUser({Username:email, Pool:pool});
-      user.confirmRegistration(code, true, (err)=>{
-        if(err){ setError(err.message||String(err)); return; }
-        uiTo('#view-login');
-        $('#li-email').value=email;
-      });
-    });
-    $('#btn-resend').addEventListener('click', ()=>{
-      const email=$('#cf-email').value.trim();
-      if(!email){ setError('Ingresa tu correo.'); return; }
-      const user=new AmazonCognitoIdentity.CognitoUser({Username:email, Pool:pool});
-      user.resendConfirmationCode((e)=> e && setError(e.message||String(e)));
-    });
-
-    // User chip (avatar + menu)
-    function paintUserChip(){
-      const first=localStorage.getItem('hl_user_first')||'';
-      const last =localStorage.getItem('hl_user_last')||'';
-      const av   =localStorage.getItem('hl_user_avatar')||'avatar1';
-      $('#user-name').textContent = `${first} ${last}`.trim();
-      $('#user-avatar').textContent = (first?first[0]:'U').toUpperCase();
-      $('#user-avatar').title = av;
-    }
-    $('#user-chip').addEventListener('click', ()=>$('#user-menu').classList.toggle('open'));
-    document.addEventListener('click',(e)=>{
-      if(!$('#user-chip').contains(e.target)) $('#user-menu').classList.remove('open');
-    });
-    $('#menu-edit').addEventListener('click', ()=>{ alert('Próximo: pantalla de perfil (fecha de nacimiento, peso, estatura, etc.).'); });
-    $('#menu-logout').addEventListener('click', ()=>{
-      const cu=pool.getCurrentUser(); if(cu) cu.signOut();
-      localStorage.clear(); uiTo('#view-login');
-    });
-
-    // Auto sesión
-    window.addEventListener('load', ()=>{
-      const cu=pool.getCurrentUser();
-      if(!cu){ uiTo('#view-login'); return; }
-      cu.getSession((err,s)=>{
-        if(err||!s?.isValid()){ uiTo('#view-login'); return; }
-        cu.getUserAttributes((e,attrs)=>{
-          const obj={}; (attrs||[]).forEach(a=>obj[a.getName()]=a.getValue());
-          localStorage.setItem('hl_user_sub', obj.sub||'');
-          localStorage.setItem('hl_user_first', obj['custom:firstName']||'');
-          localStorage.setItem('hl_user_last', obj['custom:lastName']||'');
-          localStorage.setItem('hl_user_avatar', obj['custom:avatarId']||'avatar1');
-          paintUserChip(); uiTo('#view-home'); refreshLogs();
-        });
-      });
-    });
-
-    // ========= API (Lambda) =========
-    function getUserId(){ return localStorage.getItem('hl_user_sub')||''; }
-
-    async function apiPost(obj){
-      const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
-      const data=await res.json(); if(!res.ok||!data.ok) throw new Error('POST failed'); return data;
-    }
-    async function apiGet(userId){
-      const res=await fetch(API_URL+'?userId='+encodeURIComponent(userId));
-      const data=await res.json(); if(!res.ok||!data.ok) throw new Error('GET failed'); return data.logs||[];
-    }
-
-    // ========= Listado =========
-    $('#btn-refresh').addEventListener('click', refreshLogs);
-    $('#filter-type').addEventListener('change', renderList);
-
-    let allLogs=[];
-    async function refreshLogs(){
-      try{
-        setError('');
-        allLogs = await apiGet(getUserId());
-        renderList();
-      }catch(e){ setError('No se pudieron cargar los registros.'); }
-    }
-    function renderList(){
-      const type = $('#filter-type').value;
-      const cont = $('#list');
-      cont.innerHTML = '';
-      let items = allLogs.slice();
-      if(type!=='Todos') items = items.filter(x=>x.type===type);
-      if(!items.length){ cont.innerHTML = `<div class="muted">No hay registros.</div>`; return; }
-      for(const it of items){
-        const dt = `${it.date} ${it.time}`;
-        const sub = it.subtype ? ` <span class="chip">${it.type} · ${it.subtype}</span>` : ` <span class="chip">${it.type}</span>`;
-        const notes = it.notes ? ` · Obs: ${it.notes}` : '';
-        const extra = it.type==='lpm' ? ` · LPM: ${it.payload?.resultado??''}` :
-                      it.type==='presion' ? ` · ${it.payload?.sis??''}/${it.payload?.dia??''} (${it.payload?.lpm??'-'} lpm)` :
-                      it.type==='medicamento' ? ` · ${it.payload?.nombre??''} (${it.payload?.dosis??''})` :
-                      it.type==='bano' ? ` · ${it.payload?.clase??''} - ${it.payload?.cantidad??''}` : '';
-        const el = document.createElement('div');
-        el.className='log-item';
-        el.innerHTML = `<div style="font-size:12px" class="muted">${dt}${sub}</div>
-                        <div style="margin-top:4px">${extra}${notes}</div>`;
-        cont.appendChild(el);
-      }
-    }
-
-    // ========= Modal nuevo registro =========
-    const modal = $('#modal');
-    $('#btn-new').addEventListener('click', ()=>{
-      openModalWithDefaults();
-      modal.classList.add('open');
-    });
-    $('#btn-cancel').addEventListener('click', ()=>{ clearForm(); modal.classList.remove('open'); });
-    $('#btn-save').addEventListener('click', saveForm);
-
-    $('#f-type').addEventListener('change', toggleGroups);
-
-    function openModalWithDefaults(){
-      const now = new Date();
-      $('#f-date').value = now.toISOString().slice(0,10);
-      $('#f-time').value = now.toTimeString().slice(0,5);
-      $('#f-type').value = 'dolor';
-      $('#f-intensity').value = 5;
-      $('#f-duration').value = 0;
-      $('#f-lpm').value = '';
-      $('#f-sis').value = ''; $('#f-dia').value=''; $('#f-pulse').value='';
-      $('#f-med-name').value=''; $('#f-med-dose').value='';
-      $('#f-bano-type').value='pipi'; $('#f-bano-cant').value='regular';
-      $('#f-notes').value='';
-      toggleGroups();
-    }
-    function clearForm(){ /* ya limpiado arriba al abrir/cancelar */ }
-
-    function toggleGroups(){
-      const t = $('#f-type').value;
-      // ocultar todo
-      ['#g-dolor','#g-duracion','#g-intensidad','#g-lpm','#g-presion','#g-medic','#g-bano','#g-bano-cant']
-        .forEach(hide);
-      if(t==='dolor'){ ['#g-dolor','#g-duracion','#g-intensidad'].forEach(show); }
-      if(t==='mareo'){ ['#g-duracion','#g-intensidad'].forEach(show); }
-      if(t==='lpm'){ show('#g-lpm'); }
-      if(t==='presion'){ show('#g-presion'); }
-      if(t==='medicamento'){ show('#g-medic'); }
-      if(t==='bano'){ ['#g-bano','#g-bano-cant'].forEach(show); }
-    }
-
-    async function saveForm(){
-      try{
-        setError('');
-        const userId = getUserId();
-        if(!userId){ throw new Error('Sin usuario'); }
-        const date=$('#f-date').value, time=$('#f-time').value, type=$('#f-type').value;
-        const notes=$('#f-notes').value.trim();
-        let subtype='', payload={};
-
-        if(type==='dolor'){ subtype=$('#f-dolor-zone').value; payload={ intensidad: +$('#f-intensity').value||0, duracion: +$('#f-duration').value||0 }; }
-        if(type==='mareo'){ payload={ intensidad: +$('#f-intensity').value||0, duracion: +$('#f-duration').value||0 }; }
-        if(type==='lpm'){ payload={ resultado:+$('#f-lpm').value||0, obs:notes }; }
-        if(type==='presion'){ payload={ sis:+$('#f-sis').value||0, dia:+$('#f-dia').value||0, lpm:+$('#f-pulse').value||null }; }
-        if(type==='medicamento'){ payload={ nombre:$('#f-med-name').value.trim(), dosis:$('#f-med-dose').value.trim() }; }
-        if(type==='bano'){ payload={ clase:$('#f-bano-type').value, cantidad:$('#f-bano-cant').value }; }
-
-        await apiPost({ userId, date, time, type, subtype, payload, notes });
-        modal.classList.remove('open');
-        await refreshLogs();
-      }catch(e){ setError('No se pudo guardar el registro.'); }
-    }
-
-  </script>
+  <!-- JS UI (puedes dividir luego en módulos) -->
+  <script src="/assets/app.js" defer></script>
 </body>
 </html>
