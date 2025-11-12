@@ -1,0 +1,49 @@
+/* ---- tokens.css ----------------------------------------------------------
+   Variables de diseño (colores, tipografía, espacios, radios, sombras, etc.)
+--------------------------------------------------------------------------- */
+
+:root {
+  /* Paleta principal (acordada) */
+  --color-bg: #ccecee;          /* fondo de app */
+  --color-surface: #f1f9ff;     /* tarjetas / contenedores */
+  --color-ok-surface: #e2fcd6;  /* superficies de confirmación/success */
+
+  --color-primary-700: #095d7e; /* botón principal / encabezados fuertes */
+  --color-primary-500: #14967f; /* resaltes secundarios / estados activos */
+
+  --color-text-900: #0c2b33;    /* texto principal */
+  --color-text-700: #295462;    /* texto secundario */
+  --color-text-inv: #ffffff;    /* texto sobre fondos oscuros */
+
+  --color-danger: #ff5757;      /* borrar / errores */
+
+  --color-border: #b8d7df;      /* líneas suaves / tabla */
+
+  /* Tipografía */
+  --font-sans: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Tamaños y espaciados */
+  --radius-xxs: 4px;
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+
+  --space-2: 0.25rem;
+  --space-4: 0.5rem;
+  --space-6: 0.75rem;
+  --space-8: 1rem;
+  --space-12: 1.5rem;
+  --space-16: 2rem;
+  --space-24: 3rem;
+
+  /* Sombras */
+  --shadow-1: 0 1px 2px rgba(13, 32, 41, .06), 0 1px 6px rgba(13, 32, 41, .05);
+  --shadow-2: 0 6px 18px rgba(13, 32, 41, .10);
+
+  /* Anchos máximos */
+  --container-max: 1100px;
+
+  /* Alturas */
+  --topbar-h: 64px;
+}
