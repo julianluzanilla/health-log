@@ -1,0 +1,14 @@
+/* Reset ligero */
+*{ box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: var(--ff-sans);
+  color: var(--clr-text-900);
+  background: var(--clr-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+img,svg{ display:block; max-width:100%; height:auto; }
+button,input,select,textarea{ font: inherit; color: inherit; }
+a{ color: inherit; text-decoration: none; }
