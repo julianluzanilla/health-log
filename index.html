@@ -203,9 +203,9 @@
       <table>
         <thead>
           <tr>
-            <th>Hora</th>
-            <th>Tipo</th>
-            <th>Valores y comentarios</th>
+            <th data-sort="datetime">Hora <span class="chevron">▲</span></th>
+            <th data-sort="type">Tipo <span class="chevron">▲</span></th>
+            <th data-sort="notes">Valores y comentarios <span class="chevron">▲</span></th>
             <th class="t-center">Sel.</th>
           </tr>
         </thead>
@@ -234,13 +234,14 @@
         <div class="field full">
           <label>Tipo de registro</label>
           <select id="newType">
-            <option value="presion_arterial">Presión arterial</option>
-            <option value="ritmo_cardiaco">Ritmo cardiaco</option>
+            <option value="presion">Presión arterial</option>
+            <option value="ritmo">Ritmo cardiaco</option>
             <option value="peso">Peso</option>
             <option value="bano">Baño (pipí)</option>
             <option value="dolor">Dolor</option>
             <option value="mareo">Mareo</option>
             <option value="medicamento">Toma de medicamento</option>
+            <option value="sangre">Estudio de sangre</option>
           </select>
         </div>
 
@@ -253,6 +254,62 @@
       <div class="dlg-actions">
         <button class="btn" onclick="document.querySelector('#dlgNew').close()">Cancelar</button>
         <button class="btn btn-primary" data-action="save-new">Guardar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- =============== DIALOG: EDITAR REGISTRO ================= -->
+  <dialog id="dlgEdit">
+    <div class="dlg">
+      <h3>Editar registro</h3>
+
+      <input type="hidden" id="editId">
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha</label>
+          <input id="editDate" type="date">
+        </div>
+        <div class="field">
+          <label>Hora</label>
+          <input id="editTime" type="time">
+        </div>
+
+        <div class="field full">
+          <label>Tipo de registro</label>
+          <select id="editType">
+            <option value="presion">Presión arterial</option>
+            <option value="ritmo">Ritmo cardiaco</option>
+            <option value="peso">Peso</option>
+            <option value="bano">Baño (pipí)</option>
+            <option value="dolor">Dolor</option>
+            <option value="mareo">Mareo</option>
+            <option value="medicamento">Toma de medicamento</option>
+            <option value="sangre">Estudio de sangre</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label>Valores / comentarios</label>
+          <textarea id="editNotes" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="dlg-actions">
+        <button class="btn" onclick="document.querySelector('#dlgEdit').close()">Cancelar</button>
+        <button class="btn btn-primary" data-action="save-edit">Guardar cambios</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- =============== DIALOG: BORRAR REGISTROS ================= -->
+  <dialog id="dlgDelete">
+    <div class="dlg">
+      <h3>Confirmar borrado</h3>
+      <p>Vas a borrar <strong><span id="delCount">0</span> registro(s)</strong>. Esta acción no se puede deshacer.</p>
+      <div class="dlg-actions">
+        <button class="btn" onclick="document.querySelector('#dlgDelete').close()">Cancelar</button>
+        <button class="btn btn-danger" data-action="confirm-delete">Borrar</button>
       </div>
     </div>
   </dialog>
@@ -322,19 +379,20 @@
           <label>Tipo</label>
           <select id="fltType">
             <option value="">Todos</option>
-            <option value="presion_arterial">Presión arterial</option>
-            <option value="ritmo_cardiaco">Ritmo cardiaco</option>
+            <option value="presion">Presión arterial</option>
+            <option value="ritmo">Ritmo cardiaco</option>
             <option value="peso">Peso</option>
             <option value="bano">Baño</option>
             <option value="dolor">Dolor</option>
             <option value="mareo">Mareo</option>
             <option value="medicamento">Medicamento</option>
+            <option value="sangre">Estudio de sangre</option>
           </select>
         </div>
       </div>
       <div class="dlg-actions">
         <button class="btn" onclick="document.querySelector('#dlgFilters').close()">Cerrar</button>
-        <button class="btn btn-primary">Aplicar</button>
+        <button class="btn btn-primary" data-action="apply-filters">Aplicar</button>
       </div>
     </div>
   </dialog>
@@ -344,3 +402,4 @@
   <script src="assets/app.js" defer></script>
 </body>
 </html>
+
