@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Vitalog</title>
+
+  <!-- Fuente: Open Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus CSS (ya en /assets/css/) -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/tokens.css">
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <style>
+    /* ajustes mínimos por si el CSS aún no está listo */
+    :root { --bg:#ccecee; --c-text:#0f3850; --c-primary:#095d7e; --c-primary-2:#14967f; }
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--c-text);font:16px/1.4 "Open Sans",system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+    .shell{max-width:1100px;margin:0 auto;padding:16px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .spacer{flex:1}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;border-radius:12px;border:none;padding:.8rem 1.1rem;background:#1f6ed4;color:#fff;font-weight:600;cursor:pointer}
+    .btn.secondary{background:#0b4a6a}
+    .btn.ghost{background:transparent;border:1px solid #0b4a6a;color:#0b4a6a}
+    .btn.danger{background:#ff5757}
+    header.top{display:flex;align-items:center;gap:12px}
+    header.top .brand{display:flex;align-items:center;gap:8px}
+    header.top img{height:28px}
+    header.top .menu{width:40px;height:40px;border-radius:10px;border:none;background:#e2f2f2 url('assets/icons/ui/menu.svg') center/22px 22px no-repeat;cursor:pointer}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}
+    th,td{padding:.9rem .9rem;border-bottom:1px solid #eaf2f4}
+    th{background:#e2f2f2;text-align:left;font-weight:700}
+    .t-center{text-align:center}.t-cap{text-transform:capitalize}
+    dialog{border:none;border-radius:16px;padding:0;max-width:560px;width:clamp(320px,90vw,560px)}
+    dialog .dlg-hd{padding:16px 18px;background:#e2f2f2;font-weight:700;border-radius:16px 16px 0 0}
+    dialog .dlg-bd{padding:16px 18px}
+    dialog .dlg-ft{padding:14px 18px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #eaf2f4}
+    .field{display:grid;gap:6px;margin:10px 0}
+    .field label{font-size:.9rem;opacity:.85}
+    .field input,.field select,.field textarea{padding:.6rem .75rem;border:1px solid #bcd8de;border-radius:10px;font:inherit}
+    .pillbar{display:flex;gap:10px}
+    /* ocultar vistas con [hidden] */
+    [hidden]{display:none !important}
+    /* menú de usuario */
+    #userMenu{position:absolute;right:16px;top:64px;background:#fff;border:1px solid #dbe9ee;border-radius:16px;min-width:320px;padding:8px}
+    #userMenu .item{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;cursor:pointer}
+    #userMenu .item:hover{background:#f0fbfb}
+    #userMenu img{width:20px;height:20px}
+  </style>
+</head>
+
+<body>
+  <!-- ========== VISTA: BIENVENIDA ========== -->
+  <section class="shell" data-view="welcome">
+    <header class="top">
+      <div class="brand">
+        <img src="assets/brand/logoini.svg" alt="Vitalog texto">
+        <img src="assets/brand/logofin.svg" alt="Vitalog icono">
+      </div>
+      <div class="spacer"></div>
+    </header>
+
+    <div style="height:56px"></div>
+
+    <div class="row" style="justify-content:center;gap:18px">
+      <button class="btn" data-action="go-login">
+        <img src="assets/icons/ui/usuario.svg" alt="" style="width:18px;height:18px">
+        Iniciar sesión
+      </button>
+
+      <button class="btn secondary" data-action="go-register">
+        <img src="assets/icons/ui/nuevo.svg" alt="" style="width:18px;height:18px">
+        Solicitar registro
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== VISTA: LOGIN ========== -->
+  <section class="shell" data-view="login" hidden>
+    <header class="top">
+      <button class="btn ghost" data-action="back-home">← Volver</button>
+      <div class="spacer"></div>
+      <div class="brand">
+        <img src="assets/brand/logoini.svg" alt="Vitalog texto">
+        <img src="assets/brand/logofin.svg" alt="Vitalog icono">
+      </div>
+    </header>
+
+    <div style="height:24px"></div>
+
+    <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:18px;border:1px solid #d5ecee">
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input id="loginEmail" type="email" placeholder="tucorreo@ejemplo.com" />
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input id="loginPass" type="password" placeholder="••••••••" />
+      </div>
+      <div class="row" style="justify-content:center;margin-top:8px">
+        <button class="btn" data-action="login">
+          <img src="assets/icons/ui/usuario.svg" alt="" style="width:18px;height:18px">
+          Iniciar sesión
+        </button>
+      </div>
+    </div>
+
+    <div class="row" style="justify-content:center;margin-top:16px">
+      <button class="btn ghost" data-action="go-register">
+        ¿No tienes cuenta? Solicitar registro
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== VISTA: APP ========== -->
+  <section class="shell" data-view="app" hidden>
+    <header class="top" style="position:relative">
+      <div class="brand">
+        <img src="assets/brand/logoini.svg" alt="Vitalog texto">
+        <img src="assets/brand/logofin.svg" alt="Vitalog icono">
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="row" style="align-items:center;gap:10px">
+        <img id="topbarAvatar" src="assets/avatars/avatarh.svg" alt="avatar" style="width:28px;height:28px;border-radius:50%">
+        <strong id="topbarUser">usuario@correo.com</strong>
+        <button class="menu" aria-label="Menú" data-action="toggle-menu"></button>
+      </div>
+
+      <!-- Menú de usuario -->
+      <div id="userMenu" hidden>
+        <div class="item" data-action="open-profile">
+          <img src="assets/icons/ui/usuario.svg" alt=""> Actualizar datos personales
+        </div>
+        <div class="item" data-action="change-password">
+          <img src="assets/icons/ui/password.svg" alt=""> Cambiar contraseña
+        </div>
+        <div class="item" data-action="export-data">
+          <img src="assets/icons/ui/exportar.svg" alt=""> Exportar datos (csv &gt; email)
+        </div>
+        <div class="item" data-action="backup-device">
+          <img src="assets/icons/ui/respaldo.svg" alt=""> Respaldar en este dispositivo
+        </div>
+        <div class="item" data-action="logout">
+          <img src="assets/icons/ui/logout.svg" alt=""> Cerrar sesión
+        </div>
+      </div>
+    </header>
+
+    <div style="height:12px"></div>
+
+    <!-- Barra de acciones -->
+    <div class="row" style="margin:10px 0 14px 0">
+      <div class="spacer"></div>
+      <button class="btn" data-action="open-new">
+        <img src="assets/icons/ui/nuevo.svg" alt="" style="width:18px;height:18px">
+        Nuevo
+      </button>
+      <button class="btn secondary" data-action="open-edit">
+        <img src="assets/icons/ui/editar.svg" alt="" style="width:18px;height:18px">
+        Editar
+      </button>
+      <button class="btn danger" data-action="open-delete">
+        <img src="assets/icons/ui/borrar.svg" alt="" style="width:18px;height:18px">
+        Borrar
+      </button>
+    </div>
+
+    <!-- Tabla de logs -->
+    <div style="overflow:auto;border-radius:14px;border:1px solid #d5ecee">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:240px">Hora</th>
+            <th style="width:160px">Tipo</th>
+            <th>Valores y comentarios</th>
+            <th style="width:80px" class="t-center">Sel.</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody"><!-- renderizado por app.js --></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== DLG: NUEVO REGISTRO ========== -->
+  <dialog id="dlgNew">
+    <div class="dlg-hd">Nuevo registro</div>
+    <div class="dlg-bd">
+      <div class="row">
+        <div class="field" style="flex:1 1 160px">
+          <label>Fecha</label>
+          <input type="date" id="newDate">
+        </div>
+        <div class="field" style="flex:1 1 140px">
+          <label>Hora</label>
+          <input type="time" id="newTime">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tipo de registro</label>
+        <select id="newType">
+          <option value="dolor">Dolor</option>
+          <option value="mareo">Mareo</option>
+          <option value="lpm">LPM</option>
+          <option value="sangre">Presión arterial</option>
+          <option value="medicamento">Toma de medicamento</option>
+          <option value="baño">Baño</option>
+          <option value="peso">Peso</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Observaciones / valores</label>
+        <textarea id="newNotes" rows="4" placeholder="Ej. 120/80 LPM 63 · En casa después de bañarme"></textarea>
+      </div>
+    </div>
+    <div class="dlg-ft">
+      <button class="btn ghost" onclick="document.querySelector('#dlgNew').close()">Cancelar</button>
+      <button class="btn" data-action="save-new">Guardar</button>
+    </div>
+  </dialog>
+
+  <!-- ========== DLG: PERFIL ========== -->
+  <dialog id="dlgProfile">
+    <div class="dlg-hd">Actualizar datos personales</div>
+    <div class="dlg-bd">
+      <div class="field">
+        <label>Nombre(s)</label>
+        <input id="pfName" type="text" placeholder="Nombre(s)">
+      </div>
+      <div class="field">
+        <label>Apellido(s)</label>
+        <input id="pfLast" type="text" placeholder="Apellido(s)">
+      </div>
+
+      <div class="row">
+        <div class="field" style="flex:1 1 180px">
+          <label>Fecha de nacimiento</label>
+          <input id="pfBirth" type="date">
+        </div>
+        <div class="field" style="flex:1 1 120px">
+          <label>Peso (kg)</label>
+          <input id="pfWeight" type="number" step="0.1" min="0" placeholder="80">
+        </div>
+        <div class="field" style="flex:1 1 120px">
+          <label>Estatura (m)</label>
+          <input id="pfHeight" type="number" step="0.01" min="0" placeholder="1.75">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nivel de actividad física</label>
+        <div class="pillbar">
+          <button type="button" class="btn ghost">Sedentario</button>
+          <button type="button" class="btn ghost">Leve</button>
+          <button type="button" class="btn ghost">Moderado</button>
+          <button type="button" class="btn ghost">En forma</button>
+          <button type="button" class="btn ghost">Atleta</button>
+        </div>
+      </div>
+    </div>
+    <div class="dlg-ft">
+      <button class="btn ghost" onclick="document.querySelector('#dlgProfile').close()">Cancelar</button>
+      <button class="btn" data-action="save-profile">Guardar</button>
+    </div>
+  </dialog>
+
+  <!-- JS (mock) -->
+  <script src="assets/manifest.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
