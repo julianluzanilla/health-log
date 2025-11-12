@@ -46,3 +46,52 @@
   padding:.25rem .5rem; border-radius:999px; font-size:.85rem;
   background:#e8f3f8; color:var(--clr-primary);
 }
+/* --- Topbar acciones --- */
+.topbar {
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap:16px;
+  padding:12px 20px;
+}
+
+.actions {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap: wrap;
+}
+
+.actions .btn.icon {
+  padding:10px 12px;
+  min-width:auto;
+}
+
+#btnMore {
+  width:44px;
+  height:44px;
+  border-radius:12px;
+}
+
+/* User dropdown */
+.user-menu {
+  position: absolute;
+  right: 20px;
+  top: 64px;
+  width: 320px;
+  z-index: 30;
+}
+
+/* Tabla: cursor para sort */
+th[data-sort] {
+  cursor:pointer;
+  user-select:none;
+}
+th[data-sort] .chevron {
+  display:inline-block;
+  margin-left:6px;
+  transition: transform .2s ease;
+}
+th[data-sort][data-dir="desc"] .chevron {
+  transform: rotate(180deg);
+}
